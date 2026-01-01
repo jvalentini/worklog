@@ -23,7 +23,7 @@ describe("formatOutput integration", () => {
 		const result = formatOutput(mockSummary, "markdown", false);
 		expect(result).toContain("# Daily Standup");
 		expect(result).toContain("Git Commits");
-		expect(result).toContain("1 item");
+		expect(result).toContain("1 commit");
 	});
 
 	test("produces valid JSON output", () => {

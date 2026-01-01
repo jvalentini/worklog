@@ -20,7 +20,7 @@ export function formatOutput(summary: WorkSummary, format: OutputFormat, verbose
 		case "plain":
 			return formatPlain(summary, verbose);
 		case "slack":
-			return formatSlack(summary);
+			return formatSlack(summary, verbose);
 		default:
 			return formatMarkdown(summary, verbose);
 	}

@@ -1,6 +1,7 @@
 import { format } from "date-fns";
-import type { WorkSummary } from "../types.ts";
+import type { SourceType, WorkItem, WorkSummary } from "../types.ts";
 import { formatDateRange } from "../utils/dates.ts";
+import { summarizeSourceItems } from "./summary.ts";
 
 export function formatPlain(summary: WorkSummary, verbose = false): string {
 	const lines: string[] = [];
@@ -21,15 +22,16 @@ export function formatPlain(summary: WorkSummary, verbose = false): string {
 	}
 
 	if (!verbose) {
-		const sourceCounts = new Map<string, number>();
+		const grouped = new Map<SourceType, WorkItem[]>();
 		for (const item of summary.items) {
-			const count = sourceCounts.get(item.source) ?? 0;
-			sourceCounts.set(item.source, count + 1);
+			const existing = grouped.get(item.source) ?? [];
+			existing.push(item);
+			grouped.set(item.source, existing);
 		}
 
-		for (const [source, count] of sourceCounts) {
-			const sourceName = source.toUpperCase().padEnd(8);
-			lines.push(`${sourceName} ${count} item${count !== 1 ? "s" : ""}`);
+		for (const [source, items] of grouped) {
+			const sourceName = source.toUpperCase().padEnd(10);
+			lines.push(`${sourceName} ${summarizeSourceItems(source, items)}`);
 		}
 	} else {
 		for (const item of summary.items) {

@@ -26,10 +26,10 @@ const mockSummary: WorkSummary = {
 };
 
 describe("formatMarkdown", () => {
-	test("concise mode shows source counts", () => {
+	test("concise mode shows per-source summaries", () => {
 		const result = formatMarkdown(mockSummary, false);
-		expect(result).toContain("📝 **Git Commits**: 1 item");
-		expect(result).toContain("💙 **VS Code**: 1 item");
+		expect(result).toContain("📝 **Git Commits**: 1 commit (feat 1)");
+		expect(result).toContain("💙 **VS Code**: 1 workspace (my-project)");
 		expect(result).not.toContain("## 📝 Git Commits");
 	});
 
