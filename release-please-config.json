@@ -4,6 +4,7 @@
 			"release-type": "node",
 			"bump-minor-pre-major": false,
 			"bump-patch-for-minor-pre-major": false,
+			"skip-github-release": true,
 			"changelog-sections": [
 				{ "type": "feat", "section": "Features" },
 				{ "type": "fix", "section": "Bug Fixes" },
