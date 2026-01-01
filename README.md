@@ -236,3 +236,4 @@ bun run build
 ## License
 
 MIT
+# Worklog v2.0.0 - Major Release
