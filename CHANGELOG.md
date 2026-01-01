@@ -110,6 +110,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add interactive dashboard via `--dashboard` for web-based analytics (#11) — thanks @jvalentini
 - Add cross-platform support including Windows binaries (#11) — thanks @jvalentini
 
+### Bug Fixes
+- Fix Windows path handling in VS Code and Cursor workspace tracking (#12) — thanks @jvalentini
+- Deduplicate Cursor workspace storage results across candidates (#12) — thanks @jvalentini
+
 ### Testing
 - Add unit, integration, and e2e tests for core workflows (#11) — thanks @jvalentini
 
@@ -117,4 +121,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update README with new sources, flags, and config defaults (#11) — thanks @jvalentini
 
 ### Chores
+- Avoid pre-commit failures on markdown-only commits (#12) — thanks @jvalentini
 - Improve install.sh with binary downloads and interactive config wizard (#7) — thanks @jvalentini
