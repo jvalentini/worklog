@@ -13,15 +13,15 @@ export function getFormat(options: CliOptions): OutputFormat {
 	return "markdown";
 }
 
-export function formatOutput(summary: WorkSummary, format: OutputFormat): string {
+export function formatOutput(summary: WorkSummary, format: OutputFormat, verbose = false): string {
 	switch (format) {
 		case "json":
 			return formatJson(summary);
 		case "plain":
-			return formatPlain(summary);
+			return formatPlain(summary, verbose);
 		case "slack":
 			return formatSlack(summary);
 		default:
-			return formatMarkdown(summary);
+			return formatMarkdown(summary, verbose);
 	}
 }
