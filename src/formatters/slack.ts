@@ -21,6 +21,10 @@ function sourceEmoji(source: SourceType): string {
 		factory: ":factory:",
 		git: ":memo:",
 		github: ":octocat:",
+		vscode: ":blue_heart:",
+		cursor: ":sparkles:",
+		terminal: ":desktop_computer:",
+		filesystem: ":file_folder:",
 	};
 	return emojis[source];
 }
@@ -33,6 +37,10 @@ function sourceName(source: SourceType): string {
 		factory: "Factory",
 		git: "Git",
 		github: "GitHub",
+		vscode: "VS Code",
+		cursor: "Cursor",
+		terminal: "Terminal",
+		filesystem: "File System",
 	};
 	return names[source];
 }

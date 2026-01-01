@@ -22,6 +22,10 @@ function sourceEmoji(source: SourceType): string {
 		factory: "🏭",
 		git: "📝",
 		github: "🐙",
+		vscode: "💙",
+		cursor: "✨",
+		terminal: "🖥️",
+		filesystem: "📁",
 	};
 	return emojis[source];
 }
@@ -34,11 +38,15 @@ function sourceName(source: SourceType): string {
 		factory: "Factory",
 		git: "Git Commits",
 		github: "GitHub Activity",
+		vscode: "VS Code",
+		cursor: "Cursor",
+		terminal: "Terminal",
+		filesystem: "File System",
 	};
 	return names[source];
 }
 
-export function formatMarkdown(summary: WorkSummary): string {
+export function formatMarkdown(summary: WorkSummary, verbose = false): string {
 	const lines: string[] = [];
 
 	lines.push(`# Daily Standup - ${formatDateRange(summary.dateRange)}`);
@@ -58,19 +66,28 @@ export function formatMarkdown(summary: WorkSummary): string {
 
 	const grouped = groupBySource(summary.items);
 
-	for (const [source, items] of grouped) {
-		lines.push(`## ${sourceEmoji(source)} ${sourceName(source)}`);
-		lines.push("");
-
-		for (const item of items) {
-			const time = format(item.timestamp, "HH:mm");
-			lines.push(`- **${time}** ${item.title}`);
-			if (item.description) {
-				lines.push(`  - ${item.description}`);
-			}
+	if (!verbose) {
+		for (const [source, items] of grouped) {
+			const count = items.length;
+			const emoji = sourceEmoji(source);
+			const name = sourceName(source);
+			lines.push(`${emoji} **${name}**: ${count} item${count !== 1 ? "s" : ""}`);
 		}
+	} else {
+		for (const [source, items] of grouped) {
+			lines.push(`## ${sourceEmoji(source)} ${sourceName(source)}`);
+			lines.push("");
 
-		lines.push("");
+			for (const item of items) {
+				const time = format(item.timestamp, "HH:mm");
+				lines.push(`- **${time}** ${item.title}`);
+				if (item.description) {
+					lines.push(`  - ${item.description}`);
+				}
+			}
+
+			lines.push("");
+		}
 	}
 
 	lines.push("---");

@@ -25,11 +25,13 @@ program
 	.option("-s, --slack", "Output in Slack format", false)
 	.option(
 		"--sources <sources>",
-		"Comma-separated list of sources (opencode,claude,codex,factory,git,github)",
+		"Comma-separated list of sources (opencode,claude,codex,factory,git,github,vscode,cursor,terminal,filesystem)",
 	)
 	.option("--repos <repos>", "Comma-separated list of git repo paths")
 	.option("--no-llm", "Disable LLM summarization")
-	.option("-v, --verbose", "Show verbose output", false)
+	.option("--trends", "Show activity trends compared to previous period", false)
+	.option("--dashboard", "Launch interactive web dashboard", false)
+	.option("-v, --verbose", "Show detailed output (default is concise summaries)", false)
 	.action(async (opts) => {
 		try {
 			await run(opts);
@@ -104,8 +106,63 @@ async function run(opts: CliOptions): Promise<void> {
 		console.error("");
 	}
 
+	if (opts.dashboard) {
+		const { generateDashboardHTML } = await import("../src/utils/dashboard.ts");
+		const html = generateDashboardHTML(summary);
+
+		console.log("🚀 Launching dashboard at http://localhost:3000");
+		console.log("Press Ctrl+C to stop the server");
+
+		Bun.serve({
+			port: 3000,
+			async fetch() {
+				return new Response(html, {
+					headers: { "Content-Type": "text/html" },
+				});
+			},
+		});
+		return;
+	}
+
 	const format = getFormat(opts);
-	const output = formatOutput(summary, format);
+	let output = formatOutput(summary, format, opts.verbose);
+
+	if (opts.trends) {
+		const { calculateTrends, formatTrendSummary, getPreviousDateRange } = await import(
+			"../src/utils/trends.ts"
+		);
+
+		const previousRange = getPreviousDateRange(dateRange);
+		const previousItems: WorkItem[] = [];
+
+		for (const reader of readers) {
+			try {
+				const items = await reader.read(previousRange, config);
+				previousItems.push(...items);
+			} catch {}
+		}
+
+		previousItems.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+
+		const previousSources = [...new Set(previousItems.map((item) => item.source))] as SourceType[];
+		const previousSummary: WorkSummary = {
+			dateRange: previousRange,
+			items: previousItems,
+			sources: previousSources,
+			generatedAt: new Date(),
+		};
+
+		const trendData = calculateTrends(summary, previousSummary);
+		const trendOutput = formatTrendSummary(trendData);
+
+		if (format === "json") {
+			const jsonSummary = JSON.parse(output);
+			jsonSummary.trends = trendData;
+			output = JSON.stringify(jsonSummary, null, 2);
+		} else {
+			output = `${output}\n\n${trendOutput}`;
+		}
+	}
 
 	console.log(output);
 }

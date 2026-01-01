@@ -21,7 +21,17 @@ export interface WorkSummary {
 	llmSummary?: string;
 }
 
-export type SourceType = "opencode" | "claude" | "codex" | "factory" | "git" | "github";
+export type SourceType =
+	| "opencode"
+	| "claude"
+	| "codex"
+	| "factory"
+	| "git"
+	| "github"
+	| "vscode"
+	| "cursor"
+	| "terminal"
+	| "filesystem";
 
 export interface CliOptions {
 	date?: string;
@@ -33,6 +43,8 @@ export interface CliOptions {
 	slack: boolean;
 	sources?: string[];
 	noLlm: boolean;
+	trends: boolean;
+	dashboard: boolean;
 	verbose: boolean;
 	repos?: string[];
 }
@@ -43,17 +55,51 @@ const LlmConfigSchema = z.object({
 	model: z.string().default("gpt-4o-mini"),
 });
 
+function defaultVSCodePath(): string {
+	if (process.platform === "darwin") return "~/Library/Application Support/Code";
+	if (process.platform === "win32") return "~/AppData/Roaming/Code";
+	return "~/.config/Code";
+}
+
+function defaultCursorPath(): string {
+	if (process.platform === "darwin") return "~/Library/Application Support/Cursor";
+	if (process.platform === "win32") return "~/AppData/Roaming/Cursor";
+	return "~/.config/Cursor";
+}
+
+function defaultTerminalHistoryPath(): string {
+	if (process.platform === "win32") {
+		return "~/AppData/Roaming/Microsoft/Windows/PowerShell/PSReadLine/ConsoleHost_history.txt";
+	}
+	return "~/.bash_history";
+}
+
 const PathsConfigSchema = z.object({
 	opencode: z.string().default("~/.local/share/opencode/storage/session"),
 	claude: z.string().default("~/.claude/projects"),
 	codex: z.string().default("~/.codex/sessions"),
 	factory: z.string().default("~/.factory/sessions"),
+	vscode: z.string().default(defaultVSCodePath()),
+	cursor: z.string().default(defaultCursorPath()),
+	terminal: z.string().default(defaultTerminalHistoryPath()),
+	filesystem: z.string().default("~/code"),
 });
 
 export const ConfigSchema = z.object({
 	defaultSources: z
 		.array(z.string())
-		.default(["opencode", "claude", "codex", "factory", "git", "github"]),
+		.default([
+			"opencode",
+			"claude",
+			"codex",
+			"factory",
+			"git",
+			"github",
+			"vscode",
+			"cursor",
+			"terminal",
+			"filesystem",
+		]),
 	gitRepos: z.array(z.string()).default([]),
 	githubUser: z.string().optional(),
 	llm: LlmConfigSchema.default({
@@ -66,6 +112,10 @@ export const ConfigSchema = z.object({
 		claude: "~/.claude/projects",
 		codex: "~/.codex/sessions",
 		factory: "~/.factory/sessions",
+		vscode: defaultVSCodePath(),
+		cursor: defaultCursorPath(),
+		terminal: defaultTerminalHistoryPath(),
+		filesystem: "~/code",
 	}),
 });
 
