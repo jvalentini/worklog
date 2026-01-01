@@ -395,7 +395,7 @@ main() {
 				echo "Usage: install.sh [--version <tag>] [--no-config]"
 				echo ""
 				echo "Environment variables:"
-				echo "  WORKLOG_VERSION=latest|vX.Y.Z   Release tag to install (default: latest)"
+				echo "  WORKLOG_VERSION=vX.Y.Z|latest   Release tag to install (default: latest)"
 				echo "  WORKLOG_BIN_DIR=~/.local/bin    Install directory (default: ~/.local/bin)"
 				echo "  WORKLOG_SKIP_CONFIG=1           Skip config wizard"
 				exit 0
