@@ -1,5 +1,6 @@
 import type { SourceType, WorkItem, WorkSummary } from "../types.ts";
 import { formatDateRange } from "../utils/dates.ts";
+import { summarizeSourceItems } from "./summary.ts";
 
 function groupBySource(items: WorkItem[]): Map<SourceType, WorkItem[]> {
 	const groups = new Map<SourceType, WorkItem[]>();
@@ -45,7 +46,7 @@ function sourceName(source: SourceType): string {
 	return names[source];
 }
 
-export function formatSlack(summary: WorkSummary): string {
+export function formatSlack(summary: WorkSummary, verbose = false): string {
 	const lines: string[] = [];
 
 	lines.push(`:calendar: *Daily Standup - ${formatDateRange(summary.dateRange)}*`);
@@ -65,7 +66,16 @@ export function formatSlack(summary: WorkSummary): string {
 	const grouped = groupBySource(summary.items);
 
 	for (const [source, items] of grouped) {
-		lines.push(`${sourceEmoji(source)} *${sourceName(source)}* (${items.length})`);
+		const emoji = sourceEmoji(source);
+		const name = sourceName(source);
+
+		if (!verbose) {
+			lines.push(`${emoji} *${name}*: ${summarizeSourceItems(source, items)}`);
+			lines.push("");
+			continue;
+		}
+
+		lines.push(`${emoji} *${name}* (${items.length})`);
 
 		for (const item of items.slice(0, 5)) {
 			lines.push(`  • ${item.title}`);

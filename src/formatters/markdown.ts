@@ -1,6 +1,7 @@
 import { format } from "date-fns";
 import type { SourceType, WorkItem, WorkSummary } from "../types.ts";
 import { formatDateRange } from "../utils/dates.ts";
+import { summarizeSourceItems } from "./summary.ts";
 
 function groupBySource(items: WorkItem[]): Map<SourceType, WorkItem[]> {
 	const groups = new Map<SourceType, WorkItem[]>();
@@ -68,10 +69,9 @@ export function formatMarkdown(summary: WorkSummary, verbose = false): string {
 
 	if (!verbose) {
 		for (const [source, items] of grouped) {
-			const count = items.length;
 			const emoji = sourceEmoji(source);
 			const name = sourceName(source);
-			lines.push(`${emoji} **${name}**: ${count} item${count !== 1 ? "s" : ""}`);
+			lines.push(`${emoji} **${name}**: ${summarizeSourceItems(source, items)}`);
 		}
 	} else {
 		for (const [source, items] of grouped) {
