@@ -1,3 +1,4 @@
+import { mkdir } from "node:fs/promises";
 import chalk from "chalk";
 
 const CRON_MARKER = "# worklog-daily-standup";
@@ -90,7 +91,7 @@ export async function cronInstall(options: { time?: string; slack?: string }): P
 		minute = parsed.minute;
 	}
 
-	await Bun.$`mkdir -p ${outputDir}`.quiet();
+	await mkdir(outputDir, { recursive: true });
 
 	const config: CronConfig = {
 		hour,
