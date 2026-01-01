@@ -103,5 +103,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Features
+- Add concise output by default with `--verbose` flag for detailed breakdowns (#11) — thanks @jvalentini
+- Add VS Code, Cursor, terminal, and filesystem data sources (#11) — thanks @jvalentini
+- Add trend analytics via `--trends` for previous-period comparisons (#11) — thanks @jvalentini
+- Add interactive dashboard via `--dashboard` for web-based analytics (#11) — thanks @jvalentini
+- Add cross-platform support including Windows binaries (#11) — thanks @jvalentini
+
+### Testing
+- Add unit, integration, and e2e tests for core workflows (#11) — thanks @jvalentini
+
+### Documentation
+- Update README with new sources, flags, and config defaults (#11) — thanks @jvalentini
+
 ### Chores
 - Improve install.sh with binary downloads and interactive config wizard (#7) — thanks @jvalentini
