@@ -148,6 +148,39 @@ Uses Slack emoji codes (`:wrench:`, `:octocat:`, etc.) and mrkdwn formatting for
 
 ## Development
 
+A `Makefile` is provided for common development tasks:
+
+```bash
+# Show available commands
+make help
+
+# Install dependencies
+make install
+
+# Run in development mode
+make dev
+
+# Run tests
+make test
+
+# Run all checks (linting + type checking)
+make check
+
+# Auto-fix linting issues
+make fix
+
+# Build for all platforms
+make build
+
+# Test the installation script in Docker
+make docker-test
+
+# Clean build artifacts
+make clean
+```
+
+Or use the individual Bun commands:
+
 ```bash
 # Run in development
 bun run dev
