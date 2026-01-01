@@ -23,8 +23,22 @@ A CLI tool that aggregates development activity from multiple sources to generat
 
 ## Installation
 
+Installs the latest release binary to `~/.local/bin/worklog` and walks you through creating `~/.config/worklog/config.json`.
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/jvalentini/worklog/main/install.sh | bash
+```
+
+Skip the setup wizard:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jvalentini/worklog/main/install.sh | bash -s -- --no-config
+```
+
+Install a specific version:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jvalentini/worklog/main/install.sh | bash -s -- --version v1.0.0
 ```
 
 ### Manual Installation
@@ -209,9 +223,17 @@ bun run build
 
 ## Requirements
 
+### Using the released binary
+
+- `curl` (to download the installer)
+- `git` (required for the `git` source)
+- [GitHub CLI](https://cli.github.com/) (`gh`) (optional, for the `github` source)
+
+### Development (from source)
+
 - [Bun](https://bun.sh) runtime
-- [GitHub CLI](https://cli.github.com/) (`gh`) for GitHub activity fetching
 
 ## License
 
 MIT
+# Worklog v2.0.0 - Major Release

@@ -81,3 +81,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - install.sh script
 
 ## [Unreleased]
+
+### Chores
+- Improve install.sh with binary downloads and interactive config wizard (#7) — thanks @jvalentini
