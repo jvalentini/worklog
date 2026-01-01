@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1](https://github.com/jvalentini/worklog/compare/worklog-v1.1.0...worklog-v1.1.1) (2026-01-01)
+
+
+### Bug Fixes
+
+* correct JSON formatting in generated config.json ([f439812](https://github.com/jvalentini/worklog/commit/f439812fe0e45418408cd78ab41bf9432e635f2f))
+
+
+### Chores
+
+* configure release-please to skip releases, use tags-only approach ([0669359](https://github.com/jvalentini/worklog/commit/0669359555725840ae10100090c07266e93e1ed7))
+
 ## [1.1.0](https://github.com/jvalentini/worklog/compare/worklog-v1.0.0...worklog-v1.1.0) (2026-01-01)
 
 
