@@ -16,10 +16,15 @@ A CLI tool that aggregates development activity from multiple sources to generat
 ## Features
 
 - **AI Agent Sessions**: Reads session histories from OpenCode, Claude Code, Codex, and Factory
+- **Editor Tracking**: Monitors VS Code and Cursor editor workspace usage and extensions
+- **Terminal Analytics**: Aggregates command patterns and frequency from shell history
+- **File System Monitoring**: Tracks file modifications and activity in project directories
 - **Git Integration**: Pulls commit history from a configurable list of local repositories
 - **GitHub Activity**: Fetches pushes, PRs, issues, reviews, and comments via `gh` CLI
 - **Flexible Date Ranges**: Today, yesterday, this week, this month, or specific dates
-- **Multiple Output Formats**: Markdown, JSON, plain text, or Slack-formatted
+- **Multiple Output Formats**: Markdown (default concise), JSON, plain text, or Slack-formatted
+- **Trend Analysis**: Compare activity levels with previous periods
+- **Interactive Dashboard**: Web-based analytics with charts and visualizations
 
 ## Installation
 
@@ -76,15 +81,48 @@ worklog --json          # JSON output
 worklog --plain         # Plain text
 worklog --slack         # Slack-formatted with emoji codes
 
-# Specify sources
-worklog --sources git,github,opencode
+# Specify sources (all available: opencode,claude,codex,factory,git,github,vscode,cursor,terminal,filesystem)
+worklog --sources git,github,vscode,terminal
 
 # Specify git repos
 worklog --repos ~/code/project1,~/code/project2
 
-# Verbose output
+# Trend analysis
+worklog --trends
+
+# Interactive dashboard
+worklog --dashboard
+
+# Verbose output (detailed instead of concise summaries)
 worklog -v
 ```
+
+## Advanced Features
+
+### Trend Analysis
+Compare your current activity levels with previous periods:
+
+```bash
+worklog --trends
+```
+
+Shows percentage changes in activity across all sources compared to the previous equivalent time period.
+
+### Interactive Dashboard
+Launch a web-based dashboard with charts and analytics:
+
+```bash
+worklog --dashboard
+```
+
+Opens http://localhost:3000 with interactive visualizations of your work patterns, including:
+- Activity distribution by source
+- Hourly activity patterns
+- Source-specific breakdowns
+- Real-time statistics
+
+### Output Modes
+By default, worklog provides concise single-line summaries per source. Use `--verbose` for detailed breakdowns with timestamps and descriptions.
 
 ## Configuration
 
@@ -92,7 +130,7 @@ Create `~/.config/worklog/config.json`:
 
 ```json
 {
-  "defaultSources": ["opencode", "claude", "codex", "factory", "git", "github"],
+  "defaultSources": ["opencode", "claude", "codex", "factory", "git", "github", "vscode", "cursor", "terminal", "filesystem"],
   "gitRepos": [
     "~/code/project1",
     "~/code/project2"
@@ -102,7 +140,11 @@ Create `~/.config/worklog/config.json`:
     "opencode": "~/.local/share/opencode/storage/session",
     "claude": "~/.claude/projects",
     "codex": "~/.codex/sessions",
-    "factory": "~/.factory/sessions"
+    "factory": "~/.factory/sessions",
+    "vscode": "~/.config/Code",
+    "cursor": "~/.config/Cursor",
+    "terminal": "~/.bash_history",
+    "filesystem": "~/code"
   },
   "llm": {
     "enabled": true,
@@ -130,6 +172,10 @@ Create `~/.config/worklog/config.json`:
 | `claude` | Claude Code sessions | `~/.claude/projects` |
 | `codex` | Codex sessions | `~/.codex/sessions` |
 | `factory` | Factory sessions | `~/.factory/sessions` |
+| `vscode` | VS Code workspace usage and extensions | `~/.config/Code` (Linux)<br>`~/Library/Application Support/Code` (macOS)<br>`~/AppData/Roaming/Code` (Windows) |
+| `cursor` | Cursor editor sessions | `~/.config/Cursor` (Linux)<br>`~/Library/Application Support/Cursor` (macOS)<br>`~/AppData/Roaming/Cursor` (Windows) |
+| `terminal` | Shell command patterns and frequency | `~/.bash_history`, `~/.zsh_history`, etc. |
+| `filesystem` | File modification activity | Configured project directories |
 | `git` | Git commit history | Configured repositories |
 | `github` | GitHub activity | Via `gh api` (requires `gh` CLI) |
 
