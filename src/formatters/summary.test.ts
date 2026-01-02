@@ -292,7 +292,7 @@ describe("summarizeSourceItems", () => {
 
 	describe("truncation", () => {
 		test("long summaries are truncated", () => {
-			const items = [createMockItem("terminal", "Terminal: " + "x".repeat(200), "desc")];
+			const items = [createMockItem("terminal", `Terminal: ${"x".repeat(200)}`, "desc")];
 			const summary = summarizeSourceItems("terminal", items);
 			expect(summary.length).toBeLessThanOrEqual(160);
 			expect(summary.endsWith("...")).toBe(true);
