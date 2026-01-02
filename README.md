@@ -15,6 +15,7 @@ A CLI tool that aggregates development activity from multiple sources to generat
 
 ## Features
 
+- **Project-Centric Reports**: Activity organized by project (repo) instead of by source type
 - **AI Agent Sessions**: Reads session histories from OpenCode, Claude Code, Codex, and Factory
 - **Editor Tracking**: Monitors VS Code and Cursor editor workspace usage and extensions
 - **Terminal Analytics**: Aggregates command patterns and frequency from shell history
@@ -22,10 +23,39 @@ A CLI tool that aggregates development activity from multiple sources to generat
 - **Git Integration**: Pulls commit history from a configurable list of local repositories
 - **GitHub Activity**: Fetches pushes, PRs, issues, reviews, and comments via `gh` CLI
 - **Flexible Date Ranges**: Today, yesterday, this week, this month, or specific dates
-- **Multiple Output Formats**: Markdown (default concise), JSON, plain text, or Slack-formatted
-- **Trend Analysis**: Compare activity levels with previous periods
+- **Two Output Modes**: Concise one-liners (default) or verbose detailed breakdowns (`-v`)
+- **Commit Type Grouping**: Verbose mode organizes commits by type (features, bug fixes, docs, etc.)
+- **Multiple Output Formats**: Markdown (default), JSON, plain text, or Slack-formatted
+- **Optional LLM Summaries**: AI-generated summaries with `--llm` flag (opt-in)
 - **Interactive Dashboard**: Web-based analytics with charts and visualizations
 - **Scheduled Reports**: Cron integration for automatic daily standups
+
+## Breaking Changes (v2.0+)
+
+**⚠️ If upgrading from v1.x, note these changes:**
+
+- **Default output is now project-centric** (grouped by repo) instead of source-centric (grouped by Git/GitHub/AI Sessions)
+  - Old behavior is no longer available
+  - All activity for a project appears together under the project name
+- **LLM summarization is now opt-in** with `--llm` flag
+  - Previously enabled by default
+  - Use `--llm` to generate AI summaries (requires OpenAI/Anthropic API key)
+- **`--legacy` flag removed**
+  - Project-centric view is the only mode
+- **Trends analysis temporarily disabled**
+  - Will be re-enabled in a future release with project-level metrics
+
+**Migration Guide:**
+```bash
+# Old (v1.x)
+worklog              # Source-centric output with LLM summaries
+
+# New (v2.x)
+worklog              # Project-centric concise output (no LLM)
+worklog --llm        # Project-centric with LLM summaries
+worklog -v           # Project-centric verbose (detailed)
+worklog -v --llm     # Project-centric verbose with LLM summaries
+```
 
 ## Installation
 
@@ -180,15 +210,22 @@ Reports are saved to `~/.local/share/worklog/daily/standup-YYYY-MM-DD.md` unless
 
 ### Output Modes
 
-By default, worklog provides **concise summaries** with smart per-source formatting:
-- **Git**: Shows commit count with conventional commit type breakdown (feat, fix, docs, etc.)
-- **GitHub**: Aggregates events by type (push, pr, review, issue, comment)
-- **AI Sessions**: Displays session count, total interactions, and project distribution
-- **Editors**: Lists workspaces opened and extensions updated
-- **Terminal**: Summarizes command count with top tools used
-- **File System**: Shows files modified with type breakdown
+Worklog provides **project-centric reporting** with two presentation modes:
 
-Use `--verbose` (`-v`) for detailed output with individual items, timestamps, and full descriptions.
+#### **Concise Mode** (default)
+One smart summary line per project, showing the most important work:
+- For projects with ≤3 commits: Shows actual commit messages (prefixes stripped)
+- For projects with >3 commits: Shows first commit + narrative summary (e.g., "2 features, 1 bug fix")
+- Combines commits, AI sessions, and GitHub activity into readable summaries
+
+#### **Verbose Mode** (`-v` or `--verbose`)
+Detailed breakdown organized by activity type:
+- **Commits grouped by type**: Features, Bug Fixes, Documentation, Refactoring, etc.
+- **AI Sessions**: Full session descriptions
+- **GitHub Activity**: PRs, issues, reviews with titles
+- **Summary header**: Narrative overview (e.g., "2 features, 3 documentations, 1 maintenance")
+
+Both modes support weekly reports (`-w`) and custom date ranges.
 
 ## Configuration
 
@@ -259,52 +296,76 @@ gh auth login
 
 ### Concise Mode (default)
 
-Each source generates a smart one-line summary:
+Project-centric view with smart one-line summaries per project:
 
-```
-# Daily Standup - Tue, Dec 31, 2025
+```markdown
+# Daily Standup - Thursday, January 2, 2026
 
-- **Git**: 8 commits (feat 3, fix 2, docs 2) across 2 repos
-- **GitHub**: 5 events (push 2, pr 2, review 1) across 2 repos
-- **OpenCode**: 2 sessions, 15 interactions
-- **Claude**: 3 sessions, 24 interactions across 2 projects (api 2, web 1)
-- **VS Code**: 2 workspaces (project1, project2), 3 extensions updated
-- **Terminal**: 142 commands across 5 tools (git(41), bun(18), docker(9))
-- **File System**: Modified 37 files across 3 directories (ts(22), md(6), js(4))
+**worklog**: Add verbose mode and commit type grouping; Update documentation; Fix GitHub activity formatting
+
+**api-server**: Implement OAuth authentication flow; Add rate limiting middleware
+
+**mobile-app**: Update dependencies; Fix navigation bugs in settings screen
 
 ---
-*Generated at 2025-12-31 16:00:00*
+*Generated at 2026-01-02 16:00:00*
 ```
 
 ### Verbose Mode (`-v` or `--verbose`)
 
-Detailed output with timestamps and full descriptions:
+Detailed output grouped by commit type with full activity breakdown:
 
-```
-# Daily Standup - Tue, Dec 31, 2025
+```markdown
+# Daily Standup - Thursday, January 2, 2026
 
-## OpenCode Sessions
+## worklog
+**Summary**: 2 features, 3 documentations, 1 maintenance
 
-- **09:15** OpenCode session: Refactoring authentication module
-  - 12 interactions
+**Features** (2):
+- Add verbose mode and commit type grouping
+- Implement GitHub PR title fetching
 
-## Git Commits
+**Documentation** (3):
+- Update README with new output examples
+- Add breaking changes section
+- Document new CLI flags
 
-- **10:30** [project1] feat: add user authentication
-- **14:22** [project1] fix: resolve token refresh issue
+**Maintenance** (1):
+- Clean up legacy formatter code
 
-## GitHub Activity
+**AI Sessions** (2):
+- Implementing enhanced project reporting
+- Testing verbose output modes
 
-- **11:00** [org/repo] PR #42 opened: Add OAuth support
-- **15:30** [org/repo] Reviewed PR #41: Update dependencies
+**GitHub** (1):
+- PR #42 opened: Add OAuth support
 
 ---
-*Generated at 2025-12-31 16:00:00*
+*Generated at 2026-01-02 16:00:00*
+```
+
+### Weekly Reports
+
+Shows activity grouped by day:
+
+```markdown
+# Weekly Standup - Dec 30, 2025 - Jan 5, 2026
+
+## Monday, December 30
+**worklog**: Initial project setup; Add basic CLI flags
+**api-server**: Create authentication endpoints
+
+## Tuesday, December 31
+**worklog**: Implement verbose mode; Update tests
+**mobile-app**: Fix navigation bugs
+
+---
+*Generated at 2026-01-05 16:00:00*
 ```
 
 ### Slack Format
 
-Uses Slack emoji codes (`:wrench:`, `:octocat:`, etc.) and mrkdwn formatting for posting directly to Slack.
+Uses Slack emoji codes (`:file_folder:`, `:clipboard:`, etc.) and mrkdwn formatting for posting directly to Slack.
 
 ## Development
 
