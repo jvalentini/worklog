@@ -21,6 +21,26 @@ export interface WorkSummary {
 	llmSummary?: string;
 }
 
+export interface DailyProjectActivity {
+	date: Date;
+	commits: WorkItem[];
+	sessions: WorkItem[];
+	githubActivity: WorkItem[];
+	summary?: string;
+}
+
+export interface ProjectActivity {
+	projectName: string;
+	projectPath: string;
+	dailyActivity: DailyProjectActivity[];
+}
+
+export interface ProjectWorkSummary {
+	dateRange: DateRange;
+	projects: ProjectActivity[];
+	generatedAt: Date;
+}
+
 export type SourceType =
 	| "opencode"
 	| "claude"

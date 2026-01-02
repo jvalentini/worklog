@@ -2,12 +2,18 @@
 
 import chalk from "chalk";
 import { program } from "commander";
+import { aggregateByProject } from "../src/aggregator.ts";
 import { cronInstall, cronStatus, cronUninstall } from "../src/cron.ts";
-import { formatOutput, getFormat } from "../src/formatters/index.ts";
+import { formatOutput, formatProjectOutput, getFormat } from "../src/formatters/index.ts";
+import { summarizeProjectActivity } from "../src/llm.ts";
 import { getReadersByNames } from "../src/sources/index.ts";
 import type { CliOptions, SourceType, WorkItem, WorkSummary } from "../src/types.ts";
 import { loadConfig } from "../src/utils/config.ts";
 import { formatDateRange, parseDateRange } from "../src/utils/dates.ts";
+
+interface ExtendedCliOptions extends CliOptions {
+	legacy?: boolean;
+}
 
 const VERSION = "0.1.0";
 
@@ -33,9 +39,10 @@ program
 	.option("--trends", "Show activity trends compared to previous period", false)
 	.option("--dashboard", "Launch interactive web dashboard", false)
 	.option("-v, --verbose", "Show detailed output (default is concise summaries)", false)
+	.option("--legacy", "Use legacy source-centric output format", false)
 	.action(async (opts) => {
 		try {
-			await run(opts);
+			await run(opts as ExtendedCliOptions);
 		} catch (error) {
 			if (opts.verbose) {
 				console.error(chalk.red("Error:"), error);
@@ -46,8 +53,12 @@ program
 		}
 	});
 
-async function run(opts: CliOptions): Promise<void> {
+async function run(opts: ExtendedCliOptions): Promise<void> {
 	const config = await loadConfig();
+
+	if (opts.noLlm) {
+		config.llm.enabled = false;
+	}
 
 	if (opts.repos) {
 		const repos = opts.repos as unknown as string;
@@ -126,6 +137,32 @@ async function run(opts: CliOptions): Promise<void> {
 	}
 
 	const format = getFormat(opts);
+
+	// Use new project-centric output by default, unless --legacy is specified
+	if (!opts.legacy && config.gitRepos.length > 0) {
+		if (opts.verbose) {
+			console.error(chalk.dim("Aggregating by project..."));
+		}
+
+		let projectSummary = aggregateByProject(allItems, config, dateRange);
+
+		if (opts.verbose) {
+			console.error(chalk.dim(`Found ${projectSummary.projects.length} projects with activity`));
+		}
+
+		if (config.llm.enabled && projectSummary.projects.length > 0) {
+			if (opts.verbose) {
+				console.error(chalk.dim("Generating LLM summaries..."));
+			}
+			projectSummary = await summarizeProjectActivity(projectSummary, config);
+		}
+
+		const output = formatProjectOutput(projectSummary, format);
+		console.log(output);
+		return;
+	}
+
+	// Legacy source-centric output
 	let output = formatOutput(summary, format, opts.verbose);
 
 	if (opts.trends) {
