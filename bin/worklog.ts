@@ -40,6 +40,7 @@ program
 	.option("--trends", "Show activity trends compared to previous period", false)
 	.option("--dashboard", "Launch interactive web dashboard", false)
 	.option("-v, --verbose", "Show detailed output (default is concise summaries)", false)
+	.option("--no-progress", "Disable progress while reading sources")
 	.action(async (opts) => {
 		try {
 			await run(opts as CliOptions);
@@ -83,21 +84,66 @@ async function run(opts: CliOptions): Promise<void> {
 
 	const allItems: WorkItem[] = [];
 
-	for (const reader of readers) {
+	const progressOptionSource =
+		typeof program.getOptionValueSource === "function"
+			? program.getOptionValueSource("progress")
+			: "default";
+
+	let progressEnabled = Boolean(opts.progress);
+	if (!process.stderr.isTTY && progressOptionSource !== "cli") {
+		progressEnabled = false;
+	}
+	if (opts.json && progressOptionSource !== "cli") {
+		progressEnabled = false;
+	}
+
+	process.env.WORKLOG_PROGRESS = progressEnabled ? "1" : "0";
+
+	if (progressEnabled && !opts.verbose) {
+		console.error(chalk.dim(`Reading ${readers.length} sources...`));
+	}
+
+	for (const [index, reader] of readers.entries()) {
+		const step = index + 1;
+		const prefix = `[${step}/${readers.length}]`;
+
 		if (opts.verbose) {
 			console.error(chalk.dim(`Reading ${reader.name}...`));
+		} else if (progressEnabled) {
+			console.error(chalk.dim(`${prefix} ${reader.name}...`));
 		}
+
+		const startedAt = Date.now();
 
 		try {
 			const items = await reader.read(dateRange, config);
 			allItems.push(...items);
 
+			const elapsedMs = Date.now() - startedAt;
+
 			if (opts.verbose) {
-				console.error(chalk.dim(`  Found ${items.length} items`));
+				console.error(
+					chalk.dim(`  Found ${items.length} items (${(elapsedMs / 1000).toFixed(2)}s)`),
+				);
+			} else if (progressEnabled) {
+				console.error(
+					chalk.dim(
+						`${prefix} ${reader.name}: ${items.length} items (${(elapsedMs / 1000).toFixed(2)}s)`,
+					),
+				);
 			}
 		} catch (error) {
+			const elapsedMs = Date.now() - startedAt;
+
 			if (opts.verbose) {
-				console.error(chalk.yellow(`  Failed to read ${reader.name}:`), error);
+				console.error(
+					chalk.yellow(`  Failed to read ${reader.name} (${(elapsedMs / 1000).toFixed(2)}s):`),
+					error,
+				);
+			} else if (progressEnabled) {
+				console.error(
+					chalk.yellow(`${prefix} ${reader.name}: failed (${(elapsedMs / 1000).toFixed(2)}s)`),
+				);
 			}
 		}
 	}
@@ -205,7 +251,7 @@ _worklog_completions() {
   COMPREPLY=()
   cur="\${COMP_WORDS[COMP_CWORD]}"
   prev="\${COMP_WORDS[COMP_CWORD-1]}"
-  opts="-V --version -d --date -y --yesterday -w --week -m --month -l --last -j --json -p --plain -s --slack --sources --repos --llm --trends --dashboard -v --verbose -h --help"
+  opts="-V --version -d --date -y --yesterday -w --week -m --month -l --last -j --json -p --plain -s --slack --sources --repos --llm --trends --dashboard -v --verbose --no-progress -h --help"
 
   # Prefer bash-completion helpers when available.
   if declare -F _init_completion >/dev/null 2>&1; then
@@ -233,6 +279,7 @@ _worklog_completions() {
     --trends
     --dashboard
     -v --verbose
+    --no-progress
     --legacy
     -h --help
   )

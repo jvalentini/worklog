@@ -17,18 +17,54 @@ interface GitHubEvent {
 interface MergedPR {
 	number: number;
 	title: string;
-	mergedAt: string;
+	closedAt: string;
 	repository: {
 		nameWithOwner: string;
 	};
 }
 
-async function getGitHubEvents(user: string, dateRange: DateRange): Promise<GitHubEvent[]> {
+interface GitHubUser {
+	login: string;
+}
+
+async function getAuthenticatedGitHubLogin(): Promise<string | null> {
 	try {
-		const proc = Bun.spawn(["gh", "api", `/users/${user}/events`, "--paginate"], {
+		const proc = Bun.spawn(["gh", "api", "user"], {
 			stdout: "pipe",
 			stderr: "pipe",
 		});
+
+		const output = await new Response(proc.stdout).text();
+		const exitCode = await proc.exited;
+
+		if (exitCode !== 0) {
+			return null;
+		}
+
+		const user = JSON.parse(output) as GitHubUser;
+		if (!user.login || typeof user.login !== "string") {
+			return null;
+		}
+
+		return user.login;
+	} catch {
+		return null;
+	}
+}
+
+async function fetchGitHubEventsPage(
+	user: string,
+	page: number,
+	perPage: number,
+): Promise<GitHubEvent[]> {
+	try {
+		const proc = Bun.spawn(
+			["gh", "api", `/users/${user}/events?per_page=${perPage}&page=${page}`],
+			{
+				stdout: "pipe",
+				stderr: "pipe",
+			},
+		);
 
 		const output = await new Response(proc.stdout).text();
 		const exitCode = await proc.exited;
@@ -38,11 +74,49 @@ async function getGitHubEvents(user: string, dateRange: DateRange): Promise<GitH
 		}
 
 		const events = JSON.parse(output) as GitHubEvent[];
+		if (!Array.isArray(events)) {
+			return [];
+		}
 
-		return events.filter((event) => {
-			const eventDate = new Date(event.created_at);
-			return eventDate >= dateRange.start && eventDate <= dateRange.end;
-		});
+		return events;
+	} catch {
+		return [];
+	}
+}
+
+async function getGitHubEvents(user: string, dateRange: DateRange): Promise<GitHubEvent[]> {
+	try {
+		const perPage = 100;
+		const maxPages = 3;
+		const results: GitHubEvent[] = [];
+
+		for (let page = 1; page <= maxPages; page++) {
+			if (process.env.WORKLOG_PROGRESS === "1" && process.stderr.isTTY) {
+				console.error(`github: events page ${page}/${maxPages}`);
+			}
+
+			const events = await fetchGitHubEventsPage(user, page, perPage);
+			if (events.length === 0) {
+				break;
+			}
+
+			for (const event of events) {
+				const eventDate = new Date(event.created_at);
+				if (eventDate >= dateRange.start && eventDate <= dateRange.end) {
+					results.push(event);
+				}
+			}
+
+			const oldestEvent = events[events.length - 1];
+			if (oldestEvent) {
+				const oldestDate = new Date(oldestEvent.created_at);
+				if (oldestDate < dateRange.start) {
+					break;
+				}
+			}
+		}
+
+		return results;
 	} catch {
 		return [];
 	}
@@ -125,22 +199,19 @@ function eventToWorkItem(event: GitHubEvent): WorkItem | null {
 	}
 }
 
-async function getMergedPRs(user: string, dateRange: DateRange): Promise<WorkItem[]> {
+async function searchMergedPRs(args: string[], mergedAtRange: string): Promise<MergedPR[]> {
 	try {
-		// Use gh search to find merged PRs by the user
-		// Format: author:USER is:pr is:merged merged:>=YYYY-MM-DD merged:<=YYYY-MM-DD
-		const since = format(dateRange.start, "yyyy-MM-dd");
-		const until = format(dateRange.end, "yyyy-MM-dd");
-		const query = `author:${user} is:pr is:merged merged:${since}..${until}`;
-
 		const proc = Bun.spawn(
 			[
 				"gh",
 				"search",
 				"prs",
-				query,
+				...args,
+				"--merged",
+				"--merged-at",
+				mergedAtRange,
 				"--json",
-				"number,title,mergedAt,repository",
+				"number,title,closedAt,repository",
 				"--limit",
 				"1000",
 			],
@@ -158,26 +229,64 @@ async function getMergedPRs(user: string, dateRange: DateRange): Promise<WorkIte
 		}
 
 		const prs = JSON.parse(output) as MergedPR[];
+		if (!Array.isArray(prs)) {
+			return [];
+		}
+
+		return prs;
+	} catch {
+		return [];
+	}
+}
+
+async function getMergedPRs(user: string, dateRange: DateRange): Promise<WorkItem[]> {
+	try {
+		const since = format(dateRange.start, "yyyy-MM-dd");
+		const until = format(dateRange.end, "yyyy-MM-dd");
+		const mergedAtRange = `${since}..${until}`;
+
+		const [authored, mergedBy] = await Promise.all([
+			searchMergedPRs(["--author", user], mergedAtRange),
+			searchMergedPRs([`merged-by:${user}`], mergedAtRange),
+		]);
+
+		const allPRs = [...authored, ...mergedBy];
 		const items: WorkItem[] = [];
+		const seen = new Set<string>();
 
-		for (const pr of prs) {
-			const mergedAt = new Date(pr.mergedAt);
-
-			// Double-check date range (gh search might be inclusive in unexpected ways)
-			if (mergedAt >= dateRange.start && mergedAt <= dateRange.end) {
-				items.push({
-					source: "github",
-					timestamp: mergedAt,
-					title: `[${pr.repository.nameWithOwner}] PR #${pr.number} merged: ${pr.title}`,
-					metadata: {
-						type: "pr",
-						repo: pr.repository.nameWithOwner,
-						number: pr.number,
-						action: "merged",
-						merged: true,
-					},
-				});
+		for (const pr of allPRs) {
+			const closedAt = new Date(pr.closedAt);
+			if (Number.isNaN(closedAt.getTime())) {
+				continue;
 			}
+
+			if (closedAt < dateRange.start || closedAt > dateRange.end) {
+				continue;
+			}
+
+			const repo = pr.repository?.nameWithOwner;
+			if (!repo) {
+				continue;
+			}
+
+			const key = `${repo}#${pr.number}`;
+			if (seen.has(key)) {
+				continue;
+			}
+			seen.add(key);
+
+			items.push({
+				source: "github",
+				timestamp: closedAt,
+				title: `[${repo}] PR #${pr.number} merged: ${pr.title}`,
+				metadata: {
+					type: "pr",
+					repo,
+					number: pr.number,
+					action: "merged",
+					merged: true,
+				},
+			});
 		}
 
 		return items;
@@ -189,15 +298,12 @@ async function getMergedPRs(user: string, dateRange: DateRange): Promise<WorkIte
 export const githubReader: SourceReader = {
 	name: "github",
 	async read(dateRange: DateRange, config: Config): Promise<WorkItem[]> {
-		const user = config.githubUser;
-		if (!user) {
-			return [];
-		}
+		const configuredUser = config.githubUser;
+		const login = configuredUser ?? (await getAuthenticatedGitHubLogin());
 
-		// Get both events and merged PRs
 		const [events, mergedPRs] = await Promise.all([
-			getGitHubEvents(user, dateRange),
-			getMergedPRs(user, dateRange),
+			login ? getGitHubEvents(login, dateRange) : Promise.resolve([]),
+			login ? getMergedPRs(login, dateRange) : Promise.resolve([]),
 		]);
 
 		const items: WorkItem[] = [];

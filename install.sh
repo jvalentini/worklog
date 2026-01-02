@@ -350,11 +350,26 @@ configure_worklog() {
 		done
 	fi
 
+	local github_user=""
+	local github_default="n"
+	if have gh && gh auth status >/dev/null 2>&1; then
+		github_default="y"
+	fi
+
+	if prompt_yes_no "Include GitHub activity via gh CLI (PRs, issues, pushes)?" "$github_default"; then
+		local detected_login=""
+		detected_login="$(gh api user --jq .login 2>/dev/null || true)"
+		detected_login="$(trim "$detected_login")"
+		github_user="$(prompt_input "GitHub username" "$detected_login")"
+		github_user="$(trim "$github_user")"
+	fi
+
 	local sources=()
 	if [ "$use_opencode" = "y" ]; then sources+=("opencode"); fi
 	if [ "$use_claude" = "y" ]; then sources+=("claude"); fi
 	if [ "$use_codex" = "y" ]; then sources+=("codex"); fi
 	if [ "$use_factory" = "y" ]; then sources+=("factory"); fi
+	if [ -n "$github_user" ]; then sources+=("github"); fi
 	if [ ${#repos[@]} -gt 0 ]; then sources+=("git"); fi
 
 	if [ ${#sources[@]} -eq 0 ]; then
@@ -368,7 +383,22 @@ configure_worklog() {
 	sources_json="$(json_array "${sources[@]}")"
 	repos_json="$(json_array "${repos[@]}")"
 
-	cat >"$CONFIG_PATH" <<EOF
+	if [ -n "$github_user" ]; then
+		cat >"$CONFIG_PATH" <<EOF
+{
+  "defaultSources": ${sources_json},
+  "gitRepos": ${repos_json},
+  "githubUser": "$(json_escape "$github_user")",
+  "paths": {
+    "opencode": "$(json_escape "$opencode_path")",
+    "claude": "$(json_escape "$claude_path")",
+    "codex": "$(json_escape "$codex_path")",
+    "factory": "$(json_escape "$factory_path")"
+  }
+}
+EOF
+	else
+		cat >"$CONFIG_PATH" <<EOF
 {
   "defaultSources": ${sources_json},
   "gitRepos": ${repos_json},
@@ -380,6 +410,7 @@ configure_worklog() {
   }
 }
 EOF
+	fi
 
 	chmod 600 "$CONFIG_PATH" >/dev/null 2>&1 || true
 	info "Wrote config to ${CONFIG_PATH}"
