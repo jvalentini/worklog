@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { buildCronEnvLine, buildCronLine } from "./cron.ts";
+import { buildCronEnvLine, buildCronLine, type Fetcher, postToSlack } from "./cron.ts";
 
 describe("buildCronLine", () => {
 	const baseConfig = {
@@ -80,5 +80,35 @@ describe("buildCronEnvLine", () => {
 		const envLine = buildCronEnvLine("https://example.com/webhook?token=abc&key=123");
 
 		expect(envLine).toBe("WORKLOG_SLACK_WEBHOOK=https://example.com/webhook?token=abc&key=123");
+	});
+});
+
+describe("postToSlack", () => {
+	test("posts JSON payload and returns ok on success", async () => {
+		const webhook = "https://example.com/webhook";
+		const text = "hello";
+		let called = false;
+
+		const fetchImpl: Fetcher = async (input, init) => {
+			called = true;
+			expect(input).toBe(webhook);
+			expect(init?.method).toBe("POST");
+			expect(init?.headers).toEqual({ "Content-Type": "application/json" });
+			expect(JSON.parse(String(init?.body))).toEqual({ text });
+			return new Response("", { status: 200 });
+		};
+
+		const result = await postToSlack(webhook, text, fetchImpl);
+		expect(called).toBe(true);
+		expect(result).toEqual({ ok: true });
+	});
+
+	test("returns status and statusText when Slack responds with error", async () => {
+		const fetchImpl: Fetcher = async () => {
+			return new Response("", { status: 500, statusText: "Server Error" });
+		};
+
+		const result = await postToSlack("https://example.com/webhook", "hello", fetchImpl);
+		expect(result).toEqual({ ok: false, status: 500, statusText: "Server Error" });
 	});
 });

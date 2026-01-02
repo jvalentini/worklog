@@ -4,7 +4,7 @@ import chalk from "chalk";
 import { program } from "commander";
 import pkg from "../package.json" with { type: "json" };
 import { aggregateByProject } from "../src/aggregator.ts";
-import { cronInstall, cronStatus, cronUninstall } from "../src/cron.ts";
+import { cronInstall, cronStatus, cronUninstall, postToSlack } from "../src/cron.ts";
 import { formatProjectOutput, getFormat } from "../src/formatters/index.ts";
 import { summarizeProjectActivity } from "../src/llm.ts";
 import { getReadersByNames } from "../src/sources/index.ts";
@@ -324,16 +324,9 @@ cron
 			const output = formatProjectOutput(projectSummary, format, false);
 
 			if (slackWebhook) {
-				const response = await fetch(slackWebhook, {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({ text: output }),
-				});
-
-				if (!response.ok) {
-					console.error(chalk.red("Failed to post to Slack:"), response.statusText);
+				const result = await postToSlack(slackWebhook, output);
+				if (!result.ok) {
+					console.error(chalk.red("Failed to post to Slack:"), result.statusText);
 					process.exit(1);
 				}
 			} else if (opts.output) {

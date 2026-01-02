@@ -183,3 +183,31 @@ export async function cronStatus(): Promise<void> {
 		console.log(chalk.dim("  Run: worklog cron install"));
 	}
 }
+
+export type Fetcher = (...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>;
+
+export type SlackPostResult = { ok: true } | { ok: false; status: number; statusText: string };
+
+export async function postToSlack(
+	webhook: string,
+	text: string,
+	fetchImpl: Fetcher = fetch,
+): Promise<SlackPostResult> {
+	const response = await fetchImpl(webhook, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({ text }),
+	});
+
+	if (response.ok) {
+		return { ok: true };
+	}
+
+	return {
+		ok: false,
+		status: response.status,
+		statusText: response.statusText || String(response.status),
+	};
+}
