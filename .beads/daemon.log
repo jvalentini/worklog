@@ -1,0 +1,271 @@
+[2026-01-02 10:20:59] Daemon started (interval: 5s, auto-commit: false, auto-push: false)
+[2026-01-02 10:20:59] Using database: /home/justin/code/worklog/.beads/beads.db
+[2026-01-02 10:20:59] Database opened: /home/justin/code/worklog/.beads/beads.db
+[2026-01-02 10:20:59] Upgrading .beads/.gitignore...
+[2026-01-02 10:20:59] Warning: failed to upgrade .gitignore: open .beads/.gitignore: no such file or directory
+[2026-01-02 10:20:59] Repository fingerprint validated: e9f4ede1
+[2026-01-02 10:20:59] Starting RPC server: /home/justin/code/worklog/.beads/bd.sock
+[2026-01-02 10:20:59] RPC server ready (socket listening)
+[2026-01-02 10:20:59] Registered in global registry
+[2026-01-02 10:20:59] Starting sync cycle...
+[2026-01-02 10:20:59] Exported to JSONL
+[2026-01-02 10:20:59] Sync branch pull failed: failed to create worktree: failed to checkout branch in worktree: exit status 128
+Output: fatal: Unable to create '/home/justin/code/worklog/.git/beads-worktrees/main/.git/index.lock': Not a directory
+
+[2026-01-02 10:20:59] Monitoring parent process (PID 0)
+[2026-01-02 10:20:59] Using event-driven mode
+[2026-01-02 10:20:59] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 10:20:59] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 10:20:59] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 10:21:00] Import triggered by file change
+[2026-01-02 10:21:00] Starting auto-import...
+[2026-01-02 10:21:00] Skipping auto-import: JSONL content unchanged
+[2026-01-02 10:21:01] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 10:21:01] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 10:21:01] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 10:21:01] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 10:21:01] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 10:21:01] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 10:21:02] Import triggered by file change
+[2026-01-02 10:21:02] Starting auto-import...
+[2026-01-02 10:21:02] Skipping auto-import: JSONL content unchanged
+[2026-01-02 10:51:31] Mutation detected: create wl-wb1
+[2026-01-02 10:51:31] Export triggered by mutation events
+[2026-01-02 10:51:31] Starting export...
+[2026-01-02 10:51:31] Exported to JSONL
+[2026-01-02 10:51:31] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 10:51:31] Export complete
+[2026-01-02 10:51:32] Import triggered by file change
+[2026-01-02 10:51:32] Starting auto-import...
+[2026-01-02 10:51:32] Skipping auto-import: JSONL content unchanged
+[2026-01-02 10:52:56] Mutation detected: create wl-wb1.1
+[2026-01-02 10:52:56] Mutation detected: create wl-wb1.2
+[2026-01-02 10:52:56] Mutation detected: create wl-wb1.3
+[2026-01-02 10:52:57] Export triggered by mutation events
+[2026-01-02 10:52:57] Starting export...
+[2026-01-02 10:52:57] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 10:52:57] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 10:52:57] Exported to JSONL
+[2026-01-02 10:52:57] Export complete
+[2026-01-02 10:52:58] Import triggered by file change
+[2026-01-02 10:52:58] Starting auto-import...
+[2026-01-02 10:52:58] Skipping auto-import: JSONL content unchanged
+[2026-01-02 10:54:24] Mutation detected: update wl-wb1.2
+[2026-01-02 10:54:24] Export triggered by mutation events
+[2026-01-02 10:54:24] Starting export...
+[2026-01-02 10:54:24] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 10:54:24] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 10:54:24] Exported to JSONL
+[2026-01-02 10:54:24] Export complete
+[2026-01-02 10:54:25] Import triggered by file change
+[2026-01-02 10:54:25] Starting auto-import...
+[2026-01-02 10:54:25] Skipping auto-import: JSONL content unchanged
+[2026-01-02 10:54:47] Mutation detected: create wl-wb1.4
+[2026-01-02 10:54:47] Mutation detected: create wl-wb1.5
+[2026-01-02 10:54:47] Mutation detected: create wl-wb1.6
+[2026-01-02 10:54:47] Export triggered by mutation events
+[2026-01-02 10:54:47] Starting export...
+[2026-01-02 10:54:47] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 10:54:47] Exported to JSONL
+[2026-01-02 10:54:47] Export complete
+[2026-01-02 10:54:48] Import triggered by file change
+[2026-01-02 10:54:48] Starting auto-import...
+[2026-01-02 10:54:48] Skipping auto-import: JSONL content unchanged
+[2026-01-02 10:55:12] Mutation detected: create wl-wb1.7
+[2026-01-02 10:55:12] Mutation detected: create wl-wb1.8
+[2026-01-02 10:55:12] Mutation detected: create wl-wb1.9
+[2026-01-02 10:55:12] Mutation detected: create wl-wb1.10
+[2026-01-02 10:55:12] Mutation detected: create wl-wb1.11
+[2026-01-02 10:55:13] Export triggered by mutation events
+[2026-01-02 10:55:13] Starting export...
+[2026-01-02 10:55:13] Exported to JSONL
+[2026-01-02 10:55:13] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 10:55:13] Export complete
+[2026-01-02 10:55:14] Import triggered by file change
+[2026-01-02 10:55:14] Starting auto-import...
+[2026-01-02 10:55:14] Skipping auto-import: JSONL content unchanged
+[2026-01-02 10:56:23] Mutation detected: create wl-wb1.12
+[2026-01-02 10:56:23] Mutation detected: create wl-wb1.13
+[2026-01-02 10:56:23] Mutation detected: create wl-wb1.14
+[2026-01-02 10:56:23] Mutation detected: create wl-wb1.15
+[2026-01-02 10:56:23] Export triggered by mutation events
+[2026-01-02 10:56:23] Starting export...
+[2026-01-02 10:56:23] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 10:56:23] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 10:56:23] Exported to JSONL
+[2026-01-02 10:56:23] Export complete
+[2026-01-02 10:56:24] Import triggered by file change
+[2026-01-02 10:56:24] Starting auto-import...
+[2026-01-02 10:56:24] Skipping auto-import: JSONL content unchanged
+[2026-01-02 10:58:28] Mutation detected: update wl-wb1.5
+[2026-01-02 10:58:28] Mutation detected: update wl-wb1.6
+[2026-01-02 10:58:28] Mutation detected: update wl-wb1.7
+[2026-01-02 10:58:28] Mutation detected: update wl-wb1.8
+[2026-01-02 10:58:28] Mutation detected: update wl-wb1.9
+[2026-01-02 10:58:28] Mutation detected: update wl-wb1.10
+[2026-01-02 10:58:28] Mutation detected: update wl-wb1.11
+[2026-01-02 10:58:29] Export triggered by mutation events
+[2026-01-02 10:58:29] Starting export...
+[2026-01-02 10:58:29] Exported to JSONL
+[2026-01-02 10:58:29] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 10:58:29] Export complete
+[2026-01-02 10:58:30] Import triggered by file change
+[2026-01-02 10:58:30] Starting auto-import...
+[2026-01-02 10:58:30] Skipping auto-import: JSONL content unchanged
+[2026-01-02 11:26:09] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 11:26:09] JSONL removed/renamed, re-establishing watch
+[2026-01-02 11:26:09] Successfully re-established JSONL watch after 50ms
+[2026-01-02 11:26:09] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 11:26:09] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 11:26:09] JSONL removed/renamed, re-establishing watch
+[2026-01-02 11:26:09] JSONL still missing after 50ms, retrying...
+[2026-01-02 11:26:09] JSONL still missing after 100ms, retrying...
+[2026-01-02 11:26:09] JSONL still missing after 200ms, retrying...
+[2026-01-02 11:26:10] JSONL still missing after 400ms, retrying...
+[2026-01-02 11:26:10] Failed to re-establish JSONL watch after all retries
+[2026-01-02 11:26:10] Import triggered by file change
+[2026-01-02 11:26:10] Starting auto-import...
+[2026-01-02 11:26:10] Skipping auto-import: JSONL content unchanged
+[2026-01-02 11:47:12] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 11:47:13] Import triggered by file change
+[2026-01-02 11:47:13] Starting auto-import...
+[2026-01-02 11:47:13] JSONL content changed, proceeding with auto-import...
+[2026-01-02 11:47:13] Sync branch pull failed: failed to create worktree: failed to checkout branch in worktree: exit status 128
+Output: fatal: Unable to create '/home/justin/code/worklog/.git/beads-worktrees/main/.git/index.lock': Not a directory
+
+[2026-01-02 11:48:31] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 11:48:31] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 11:48:32] Import triggered by file change
+[2026-01-02 11:48:32] Starting auto-import...
+[2026-01-02 11:48:32] Skipping auto-import: JSONL content unchanged
+[2026-01-02 11:56:12] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 11:56:12] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 11:56:12] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 11:56:13] Import triggered by file change
+[2026-01-02 11:56:13] Starting auto-import...
+[2026-01-02 11:56:13] Skipping auto-import: JSONL content unchanged
+[2026-01-02 11:56:36] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 11:56:36] JSONL removed/renamed, re-establishing watch
+[2026-01-02 11:56:36] JSONL still missing after 50ms, retrying...
+[2026-01-02 11:56:36] JSONL still missing after 100ms, retrying...
+[2026-01-02 11:56:36] JSONL still missing after 200ms, retrying...
+[2026-01-02 11:56:37] JSONL still missing after 400ms, retrying...
+[2026-01-02 11:56:37] Failed to re-establish JSONL watch after all retries
+[2026-01-02 11:56:37] Git ref change detected: /home/justin/code/worklog/.git/refs/heads/main.lock
+[2026-01-02 11:56:37] Import triggered by file change
+[2026-01-02 11:56:37] Starting auto-import...
+[2026-01-02 11:56:37] Skipping auto-import: JSONL content unchanged
+[2026-01-02 11:56:38] Import triggered by file change
+[2026-01-02 11:56:38] Starting auto-import...
+[2026-01-02 11:56:38] Skipping auto-import: JSONL content unchanged
+[2026-01-02 12:06:56] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 12:06:56] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: WRITE)
+[2026-01-02 12:06:57] Import triggered by file change
+[2026-01-02 12:06:57] Starting auto-import...
+[2026-01-02 12:06:57] Skipping auto-import: JSONL content unchanged
+[2026-01-02 12:07:07] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 12:07:07] JSONL removed/renamed, re-establishing watch
+[2026-01-02 12:07:07] JSONL still missing after 50ms, retrying...
+[2026-01-02 12:07:07] JSONL still missing after 100ms, retrying...
+[2026-01-02 12:07:07] JSONL still missing after 200ms, retrying...
+[2026-01-02 12:07:07] JSONL still missing after 400ms, retrying...
+[2026-01-02 12:07:07] Failed to re-establish JSONL watch after all retries
+[2026-01-02 12:07:08] Import triggered by file change
+[2026-01-02 12:07:08] Starting auto-import...
+[2026-01-02 12:07:08] Skipping auto-import: JSONL content unchanged
+[2026-01-02 12:15:26] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 12:15:26] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: WRITE)
+[2026-01-02 12:15:27] Import triggered by file change
+[2026-01-02 12:15:27] Starting auto-import...
+[2026-01-02 12:15:27] Skipping auto-import: JSONL content unchanged
+[2026-01-02 12:15:50] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 12:15:50] JSONL removed/renamed, re-establishing watch
+[2026-01-02 12:15:50] Successfully re-established JSONL watch after 50ms
+[2026-01-02 12:15:50] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 12:15:51] Import triggered by file change
+[2026-01-02 12:15:51] Starting auto-import...
+[2026-01-02 12:15:51] JSONL content changed, proceeding with auto-import...
+[2026-01-02 12:15:52] Sync branch pull failed: failed to create worktree: failed to checkout branch in worktree: exit status 128
+Output: fatal: Unable to create '/home/justin/code/worklog/.git/beads-worktrees/main/.git/index.lock': Not a directory
+
+[2026-01-02 12:15:56] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 12:15:56] JSONL removed/renamed, re-establishing watch
+[2026-01-02 12:15:56] Successfully re-established JSONL watch after 50ms
+[2026-01-02 12:15:56] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 12:15:56] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: WRITE)
+[2026-01-02 12:15:57] Import triggered by file change
+[2026-01-02 12:15:57] Starting auto-import...
+[2026-01-02 12:15:57] Skipping auto-import: JSONL content unchanged
+[2026-01-02 12:16:02] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 12:16:02] JSONL removed/renamed, re-establishing watch
+[2026-01-02 12:16:02] Successfully re-established JSONL watch after 50ms
+[2026-01-02 12:16:02] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 12:16:03] Import triggered by file change
+[2026-01-02 12:16:03] Starting auto-import...
+[2026-01-02 12:16:03] JSONL content changed, proceeding with auto-import...
+[2026-01-02 12:16:03] Sync branch pull failed: failed to create worktree: failed to checkout branch in worktree: exit status 128
+Output: fatal: Unable to create '/home/justin/code/worklog/.git/beads-worktrees/main/.git/index.lock': Not a directory
+
+[2026-01-02 12:16:05] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 12:16:05] JSONL removed/renamed, re-establishing watch
+[2026-01-02 12:16:05] JSONL still missing after 50ms, retrying...
+[2026-01-02 12:16:05] JSONL still missing after 100ms, retrying...
+[2026-01-02 12:16:05] JSONL still missing after 200ms, retrying...
+[2026-01-02 12:16:06] JSONL still missing after 400ms, retrying...
+[2026-01-02 12:16:06] Failed to re-establish JSONL watch after all retries
+[2026-01-02 12:16:06] Import triggered by file change
+[2026-01-02 12:16:06] Starting auto-import...
+[2026-01-02 12:16:06] Skipping auto-import: JSONL content unchanged
+[2026-01-02 12:17:43] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 12:17:44] Import triggered by file change
+[2026-01-02 12:17:44] Starting auto-import...
+[2026-01-02 12:17:44] JSONL content changed, proceeding with auto-import...
+[2026-01-02 12:17:44] Sync branch pull failed: failed to create worktree: failed to checkout branch in worktree: exit status 128
+Output: fatal: Unable to create '/home/justin/code/worklog/.git/beads-worktrees/main/.git/index.lock': Not a directory
+
+[2026-01-02 12:17:59] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 12:17:59] JSONL removed/renamed, re-establishing watch
+[2026-01-02 12:17:59] Successfully re-established JSONL watch after 50ms
+[2026-01-02 12:17:59] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 12:17:59] Git ref change detected: /home/justin/code/worklog/.git/refs/heads/main.lock
+[2026-01-02 12:18:00] Import triggered by file change
+[2026-01-02 12:18:00] Starting auto-import...
+[2026-01-02 12:18:00] Skipping auto-import: JSONL content unchanged
+[2026-01-02 13:35:08] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 13:35:08] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 13:35:08] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 13:35:09] Import triggered by file change
+[2026-01-02 13:35:09] Starting auto-import...
+[2026-01-02 13:35:09] Skipping auto-import: JSONL content unchanged
+[2026-01-02 13:36:57] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 13:36:57] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 13:36:57] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 13:36:58] Import triggered by file change
+[2026-01-02 13:36:58] Starting auto-import...
+[2026-01-02 13:36:58] Skipping auto-import: JSONL content unchanged
+[2026-01-02 13:37:07] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 13:37:07] JSONL removed/renamed, re-establishing watch
+[2026-01-02 13:37:07] Successfully re-established JSONL watch after 50ms
+[2026-01-02 13:37:07] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 13:37:08] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 13:37:08] JSONL removed/renamed, re-establishing watch
+[2026-01-02 13:37:08] Successfully re-established JSONL watch after 50ms
+[2026-01-02 13:37:08] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 13:37:08] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: WRITE)
+[2026-01-02 13:37:08] Git ref change detected: /home/justin/code/worklog/.git/refs/heads/main.lock
+[2026-01-02 13:37:08] Import triggered by file change
+[2026-01-02 13:37:08] Starting auto-import...
+[2026-01-02 13:37:08] Skipping auto-import: JSONL content unchanged
+[2026-01-02 13:37:09] Import triggered by file change
+[2026-01-02 13:37:09] Starting auto-import...
+[2026-01-02 13:37:09] Skipping auto-import: JSONL content unchanged
+[2026-01-02 13:42:39] Mutation detected: update wl-wb1.4
+[2026-01-02 13:42:40] Export triggered by mutation events
+[2026-01-02 13:42:40] Starting export...
+[2026-01-02 13:42:40] Exported to JSONL
+[2026-01-02 13:42:40] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 13:42:40] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 13:42:40] Export complete
+[2026-01-02 13:42:41] Import triggered by file change
+[2026-01-02 13:42:41] Starting auto-import...
+[2026-01-02 13:42:41] Skipping auto-import: JSONL content unchanged
