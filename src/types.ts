@@ -125,6 +125,7 @@ export const ConfigSchema = z.object({
 			"filesystem",
 		]),
 	gitRepos: z.array(z.string()).default([]),
+	gitIdentityEmails: z.array(z.string()).optional(),
 	githubUser: z.string().optional(),
 	llm: LlmConfigSchema.default({
 		enabled: false,
