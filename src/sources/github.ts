@@ -150,10 +150,12 @@ function eventToWorkItem(event: GitHubEvent): WorkItem | null {
 				action = "merged";
 			}
 
+			// PR title may not be available in events API
+			const titleText = pr.title ? `: ${pr.title}` : "";
 			return {
 				source: "github",
 				timestamp,
-				title: `[${repo}] PR #${pr.number} ${action}: ${pr.title}`,
+				title: `[${repo}] PR #${pr.number} ${action}${titleText}`,
 				metadata: { type: "pr", repo, number: pr.number, action, merged: pr.merged },
 			};
 		}

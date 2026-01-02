@@ -74,43 +74,39 @@ async function parseSessionFile(
 	try {
 		const file = Bun.file(filePath);
 		const content = await file.text();
-		const lines = content.split("\n").filter((line) => line.trim());
+		const session = JSON.parse(content) as {
+			id: string;
+			title: string;
+			time: { created: number; updated: number };
+			projectID: string;
+			directory: string;
+		};
 
-		let sessionStart: Date | null = null;
-		const userMessages: string[] = [];
-		const allMessages: OpenCodeMessage[] = [];
+		const sessionStart = new Date(session.time.created);
 
-		for (const line of lines) {
-			try {
-				const msg = JSON.parse(line) as OpenCodeMessage;
-
-				if (msg.timestamp) {
-					const timestamp = new Date(msg.timestamp);
-					if (!sessionStart) {
-						sessionStart = timestamp;
-					}
-
-					if (msg.role === "user" && msg.content && isWithinRange(timestamp, dateRange)) {
-						const firstLine = msg.content.split("\n")[0]?.slice(0, 200) ?? "";
-						userMessages.push(firstLine);
-					}
-
-					allMessages.push(msg);
-				}
-			} catch {}
-		}
-
-		if (sessionStart && isWithinRange(sessionStart, dateRange) && userMessages.length > 0) {
-			const repo = findRepoFromMessages(allMessages, gitRepos);
+		if (isWithinRange(sessionStart, dateRange)) {
+			// Try to find repo from directory path
+			let repo: string | undefined;
+			const dummyItem: WorkItem = {
+				source: "opencode",
+				timestamp: sessionStart,
+				title: "temp",
+				metadata: { repo: session.directory },
+			};
+			const attributed = attributeWorkItem(dummyItem, gitRepos);
+			if (attributed !== "misc") {
+				repo = attributed;
+			}
 
 			items.push({
 				source: "opencode",
 				timestamp: sessionStart,
-				title: `OpenCode session: ${userMessages[0]}`,
-				description: userMessages.length > 1 ? `${userMessages.length} interactions` : undefined,
+				title: `OpenCode: ${session.title}`,
+				description: `Project: ${session.projectID}`,
 				metadata: {
 					sessionFile: basename(filePath),
-					messageCount: userMessages.length,
+					projectID: session.projectID,
+					directory: session.directory,
 					...(repo && { repo }),
 				},
 			});
@@ -130,9 +126,9 @@ export const opencodeReader: SourceReader = {
 
 		try {
 			const files = await readdir(basePath);
-			const jsonlFiles = files.filter((f) => f.endsWith(".jsonl"));
+			const jsonFiles = files.filter((f) => f.endsWith(".json"));
 
-			for (const file of jsonlFiles) {
+			for (const file of jsonFiles) {
 				const sessionItems = await parseSessionFile(
 					join(basePath, file),
 					dateRange,
