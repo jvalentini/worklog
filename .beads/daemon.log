@@ -568,3 +568,18 @@ Output: fatal: Unable to create '/home/justin/code/worklog/.git/beads-worktrees/
 [2026-01-02 14:30:04] Import triggered by file change
 [2026-01-02 14:30:04] Starting auto-import...
 [2026-01-02 14:30:04] Skipping auto-import: JSONL content unchanged
+[2026-01-02 14:34:13] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 14:34:13] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 14:34:13] File change detected: /home/justin/code/worklog/.beads/issues.jsonl (op: CHMOD)
+[2026-01-02 14:34:14] Import triggered by file change
+[2026-01-02 14:34:14] Starting auto-import...
+[2026-01-02 14:34:14] Skipping auto-import: JSONL content unchanged
+[2026-01-02 14:34:19] Mutation detected: update wl-wb1.12
+[2026-01-02 14:34:19] Export triggered by mutation events
+[2026-01-02 14:34:19] Starting export...
+[2026-01-02 14:34:19] JSONL file created: /home/justin/code/worklog/.beads/issues.jsonl
+[2026-01-02 14:34:19] Exported to JSONL
+[2026-01-02 14:34:19] Export complete
+[2026-01-02 14:34:20] Import triggered by file change
+[2026-01-02 14:34:20] Starting auto-import...
+[2026-01-02 14:34:20] Skipping auto-import: JSONL content unchanged
