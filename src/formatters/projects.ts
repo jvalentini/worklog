@@ -1,6 +1,11 @@
 import { format, isSameDay } from "date-fns";
 import { getCommitSubjects, getGitHubDescriptions, getSessionDescriptions } from "../aggregator.ts";
-import type { DailyProjectActivity, ProjectActivity, ProjectWorkSummary } from "../types.ts";
+import type {
+	DailyProjectActivity,
+	ProjectActivity,
+	ProjectWorkSummary,
+	WorkItem,
+} from "../types.ts";
 import { cleanSubject } from "../utils/commits.ts";
 import { formatDateRange } from "../utils/dates.ts";
 import { formatTrendSummary } from "../utils/trends.ts";
@@ -283,28 +288,217 @@ function isSingleDay(summary: ProjectWorkSummary): boolean {
 	return isSameDay(start, end);
 }
 
-function getAllDates(summary: ProjectWorkSummary): Date[] {
-	const dateSet = new Set<string>();
-	const dates: Date[] = [];
+interface PRItem {
+	number: number;
+	title: string;
+	url: string;
+	action: "opened" | "merged";
+}
 
-	for (const project of summary.projects) {
-		for (const daily of project.dailyActivity) {
-			const key = format(daily.date, "yyyy-MM-dd");
-			if (!dateSet.has(key)) {
-				dateSet.add(key);
-				dates.push(daily.date);
+interface BranchMergeItem {
+	sourceBranch: string;
+	targetBranch: string;
+}
+
+interface WeeklyProjectActivity {
+	prsOpened: PRItem[];
+	prsMerged: PRItem[];
+	branchesMerged: BranchMergeItem[];
+	commits: WorkItem[];
+	sessions: WorkItem[];
+	otherActivity: WorkItem[];
+}
+
+function extractPRsFromActivity(activity: DailyProjectActivity[]): {
+	opened: PRItem[];
+	merged: PRItem[];
+} {
+	const opened: PRItem[] = [];
+	const merged: PRItem[] = [];
+	const seen = new Set<string>();
+
+	for (const daily of activity) {
+		for (const item of daily.githubActivity) {
+			const metadata = item.metadata;
+			if (metadata?.type === "pr" && typeof metadata.number === "number") {
+				const action = metadata.action as string;
+				const number = metadata.number as number;
+				const url = (metadata.url as string) || "";
+				const title = (metadata.title as string) || item.title;
+
+				const key = `${action}-${number}`;
+				if (seen.has(key)) continue;
+				seen.add(key);
+
+				if (action === "opened") {
+					opened.push({ number, title, url, action: "opened" });
+				} else if (action === "merged") {
+					merged.push({ number, title, url, action: "merged" });
+				}
 			}
 		}
 	}
 
-	return dates.sort((a, b) => a.getTime() - b.getTime());
+	return { opened, merged };
 }
 
-function getProjectActivityForDate(
-	project: ProjectActivity,
-	date: Date,
-): DailyProjectActivity | undefined {
-	return project.dailyActivity.find((daily) => isSameDay(daily.date, date));
+function extractBranchMergesFromActivity(activity: DailyProjectActivity[]): BranchMergeItem[] {
+	const branches: BranchMergeItem[] = [];
+	const seen = new Set<string>();
+
+	for (const daily of activity) {
+		for (const item of daily.commits) {
+			const metadata = item.metadata;
+			if (metadata?.type === "branch" && metadata?.action === "merged") {
+				const sourceBranch = metadata.sourceBranch as string;
+				const targetBranch = metadata.targetBranch as string;
+
+				const key = `${sourceBranch}->${targetBranch}`;
+				if (seen.has(key)) continue;
+				seen.add(key);
+
+				branches.push({ sourceBranch, targetBranch });
+			}
+		}
+	}
+
+	return branches;
+}
+
+function aggregateWeeklyActivity(project: ProjectActivity): WeeklyProjectActivity {
+	const { opened, merged } = extractPRsFromActivity(project.dailyActivity);
+	const branchesMerged = extractBranchMergesFromActivity(project.dailyActivity);
+
+	const commits: WorkItem[] = [];
+	const sessions: WorkItem[] = [];
+	const otherActivity: WorkItem[] = [];
+
+	for (const daily of project.dailyActivity) {
+		commits.push(...daily.commits);
+		sessions.push(...daily.sessions);
+		if (daily.otherActivity) {
+			otherActivity.push(...daily.otherActivity);
+		}
+	}
+
+	return {
+		prsOpened: opened,
+		prsMerged: merged,
+		branchesMerged,
+		commits,
+		sessions,
+		otherActivity,
+	};
+}
+
+function formatWeeklyProject(project: ProjectActivity, verbose: boolean): string {
+	const lines: string[] = [];
+	lines.push(`## ${project.projectName}`);
+	lines.push("");
+
+	const weekly = aggregateWeeklyActivity(project);
+
+	// PR opened lines
+	for (const pr of weekly.prsOpened) {
+		const urlPart = pr.url ? ` (${pr.url})` : "";
+		lines.push(`Opened PR #${pr.number}: ${pr.title}${urlPart}`);
+	}
+
+	// PR merged lines
+	for (const pr of weekly.prsMerged) {
+		const urlPart = pr.url ? ` (${pr.url})` : "";
+		lines.push(`Merged PR #${pr.number}: ${pr.title}${urlPart}`);
+	}
+
+	// Branch merge lines
+	for (const branch of weekly.branchesMerged) {
+		lines.push(`Merged branch ${branch.sourceBranch} → ${branch.targetBranch}`);
+	}
+
+	// Other activity (commits, sessions, etc.)
+	if (weekly.commits.length > 0 || weekly.sessions.length > 0 || weekly.otherActivity.length > 0) {
+		if (
+			weekly.prsOpened.length > 0 ||
+			weekly.prsMerged.length > 0 ||
+			weekly.branchesMerged.length > 0
+		) {
+			lines.push("");
+		}
+
+		if (verbose) {
+			// Verbose mode: detailed breakdown
+			if (weekly.commits.length > 0) {
+				const subjects = getCommitSubjects(weekly.commits);
+				const groups = groupCommitsByType(subjects);
+
+				for (const group of groups) {
+					lines.push(`**${group.label}** (${group.subjects.length}):`);
+					for (const subject of group.subjects) {
+						lines.push(`- ${subject}`);
+					}
+					lines.push("");
+				}
+			}
+
+			if (weekly.sessions.length > 0) {
+				lines.push(`**AI Sessions** (${weekly.sessions.length}):`);
+				const descriptions = getSessionDescriptions(weekly.sessions);
+				for (const desc of descriptions) {
+					lines.push(`- ${desc}`);
+				}
+				lines.push("");
+			}
+
+			if (weekly.otherActivity.length > 0) {
+				lines.push(`**Other Activity** (${weekly.otherActivity.length}):`);
+				for (const item of weekly.otherActivity) {
+					let title = item.title;
+					const bracketMatch = /^\[([^\]]+)\]\s*/.exec(title);
+					if (bracketMatch) {
+						title = title.slice(bracketMatch[0].length);
+					}
+					lines.push(`- ${title}`);
+				}
+				lines.push("");
+			}
+		} else {
+			// Concise mode: summary line
+			const parts: string[] = [];
+
+			if (weekly.commits.length > 0) {
+				const subjects = getCommitSubjects(weekly.commits);
+				if (subjects.length <= 3) {
+					parts.push(...subjects.map((s) => cleanSubject(s)));
+				} else {
+					const first = subjects[0];
+					if (first) {
+						parts.push(cleanSubject(first));
+					}
+					const summary = generateNarrativeSummary({
+						date: new Date(),
+						commits: weekly.commits,
+						sessions: weekly.sessions,
+						githubActivity: [],
+						otherActivity: weekly.otherActivity,
+					});
+					if (summary && summary !== "Development activity") {
+						parts.push(summary);
+					}
+				}
+			}
+
+			if (parts.length === 0 && weekly.sessions.length > 0) {
+				const descriptions = getSessionDescriptions(weekly.sessions);
+				parts.push(...descriptions);
+			}
+
+			for (const part of parts) {
+				lines.push(part);
+			}
+		}
+	}
+
+	return lines.join("\n");
 }
 
 export function formatProjectsMarkdown(summary: ProjectWorkSummary, verbose = false): string {
@@ -332,18 +526,8 @@ export function formatProjectsMarkdown(summary: ProjectWorkSummary, verbose = fa
 			}
 		}
 	} else {
-		const allDates = getAllDates(summary);
-
-		for (const date of allDates) {
-			lines.push(`## ${format(date, "EEEE, MMMM d")}`);
-			lines.push("");
-
-			for (const project of summary.projects) {
-				const daily = getProjectActivityForDate(project, date);
-				if (daily) {
-					lines.push(formatDailyProject(project, daily, verbose));
-				}
-			}
+		for (const project of summary.projects) {
+			lines.push(formatWeeklyProject(project, verbose));
 			lines.push("");
 		}
 	}
@@ -383,19 +567,48 @@ export function formatProjectsPlain(summary: ProjectWorkSummary, verbose = false
 			}
 		}
 	} else {
-		const allDates = getAllDates(summary);
-
-		for (const date of allDates) {
-			lines.push(`${format(date, "EEEE, MMMM d")}`);
+		for (const project of summary.projects) {
+			lines.push(project.projectName.toUpperCase());
 			lines.push("-".repeat(30));
 
-			for (const project of summary.projects) {
-				const daily = getProjectActivityForDate(project, date);
-				if (daily) {
-					const summary_text = daily.summary ?? generateEnhancedSummary(daily);
-					lines.push(`  ${project.projectName}: ${summary_text}`);
-				}
+			const weekly = aggregateWeeklyActivity(project);
+
+			for (const pr of weekly.prsOpened) {
+				const urlPart = pr.url ? ` (${pr.url})` : "";
+				lines.push(`  Opened PR #${pr.number}: ${pr.title}${urlPart}`);
 			}
+
+			for (const pr of weekly.prsMerged) {
+				const urlPart = pr.url ? ` (${pr.url})` : "";
+				lines.push(`  Merged PR #${pr.number}: ${pr.title}${urlPart}`);
+			}
+
+			for (const branch of weekly.branchesMerged) {
+				lines.push(`  Merged branch ${branch.sourceBranch} -> ${branch.targetBranch}`);
+			}
+
+			if (
+				weekly.commits.length > 0 ||
+				weekly.sessions.length > 0 ||
+				weekly.otherActivity.length > 0
+			) {
+				const summary_text = generateEnhancedSummary({
+					date: new Date(),
+					commits: weekly.commits,
+					sessions: weekly.sessions,
+					githubActivity: [],
+					otherActivity: weekly.otherActivity,
+				});
+				if (
+					weekly.prsOpened.length > 0 ||
+					weekly.prsMerged.length > 0 ||
+					weekly.branchesMerged.length > 0
+				) {
+					lines.push("");
+				}
+				lines.push(`  ${summary_text}`);
+			}
+
 			lines.push("");
 		}
 	}
@@ -432,18 +645,47 @@ export function formatProjectsSlack(summary: ProjectWorkSummary, verbose = false
 			}
 		}
 	} else {
-		const allDates = getAllDates(summary);
+		for (const project of summary.projects) {
+			lines.push(`:file_folder: *${project.projectName}*`);
 
-		for (const date of allDates) {
-			lines.push(`*${format(date, "EEEE, MMMM d")}*`);
+			const weekly = aggregateWeeklyActivity(project);
 
-			for (const project of summary.projects) {
-				const daily = getProjectActivityForDate(project, date);
-				if (daily) {
-					const summary_text = daily.summary ?? generateEnhancedSummary(daily);
-					lines.push(`:file_folder: *${project.projectName}*: ${summary_text}`);
-				}
+			for (const pr of weekly.prsOpened) {
+				const urlPart = pr.url ? ` (${pr.url})` : "";
+				lines.push(`Opened PR #${pr.number}: ${pr.title}${urlPart}`);
 			}
+
+			for (const pr of weekly.prsMerged) {
+				const urlPart = pr.url ? ` (${pr.url})` : "";
+				lines.push(`Merged PR #${pr.number}: ${pr.title}${urlPart}`);
+			}
+
+			for (const branch of weekly.branchesMerged) {
+				lines.push(`Merged branch ${branch.sourceBranch} -> ${branch.targetBranch}`);
+			}
+
+			if (
+				weekly.commits.length > 0 ||
+				weekly.sessions.length > 0 ||
+				weekly.otherActivity.length > 0
+			) {
+				const summary_text = generateEnhancedSummary({
+					date: new Date(),
+					commits: weekly.commits,
+					sessions: weekly.sessions,
+					githubActivity: [],
+					otherActivity: weekly.otherActivity,
+				});
+				if (
+					weekly.prsOpened.length > 0 ||
+					weekly.prsMerged.length > 0 ||
+					weekly.branchesMerged.length > 0
+				) {
+					lines.push("");
+				}
+				lines.push(summary_text);
+			}
+
 			lines.push("");
 		}
 	}
