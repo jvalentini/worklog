@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Performance
+
+* dramatically improve GitHub source performance and add progress reporting (#19) — thanks @jvalentini
+
 ### Features
 
 * add project-centric summaries with LLM support (#16) — thanks @jvalentini
