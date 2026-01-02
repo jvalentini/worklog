@@ -21,10 +21,6 @@ function normalizeProjectName(name: string): string {
 function getProjectFromWorkItem(item: WorkItem): string | undefined {
 	const repo = item.metadata?.repo;
 	if (typeof repo === "string") {
-		if (repo.includes("/")) {
-			const parts = repo.split("/");
-			return parts[parts.length - 1];
-		}
 		return getProjectNameFromPath(repo);
 	}
 
