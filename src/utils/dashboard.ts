@@ -30,23 +30,70 @@ export function generateDashboardHTML(summary: WorkSummary): string {
     <title>Worklog Dashboard - ${summary.dateRange.start.toDateString()}</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        :root {
+            --bg-primary: #f5f5f5;
+            --bg-secondary: white;
+            --bg-card: #f8f9fa;
+            --text-primary: #000000;
+            --text-secondary: #666;
+            --text-tertiary: #999;
+            --border-color: #e0e0e0;
+            --border-light: #eee;
+            --accent-color: #007acc;
+            --accent-hover: #005999;
+            --shadow: rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-card: #3a3a3a;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --text-tertiary: #808080;
+            --border-color: #404040;
+            --border-light: #333;
+            --accent-color: #4da6ff;
+            --accent-hover: #3399ff;
+            --shadow: rgba(0,0,0,0.3);
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
             padding: 20px;
-            background: #f5f5f5;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background: white;
+            background: var(--bg-secondary);
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px var(--shadow);
             padding: 20px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
         .header {
             text-align: center;
             margin-bottom: 30px;
+            position: relative;
+        }
+        .theme-toggle {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .theme-toggle:hover {
+            background: var(--border-color);
         }
         .stats-grid {
             display: grid;
@@ -55,19 +102,22 @@ export function generateDashboardHTML(summary: WorkSummary): string {
             margin-bottom: 30px;
         }
         .stat-card {
-            background: #f8f9fa;
+            background: var(--bg-card);
             padding: 20px;
             border-radius: 8px;
             text-align: center;
+            transition: background-color 0.3s ease;
         }
         .stat-number {
             font-size: 2em;
             font-weight: bold;
-            color: #007acc;
+            color: var(--accent-color);
+            transition: color 0.3s ease;
         }
         .stat-label {
-            color: #666;
+            color: var(--text-secondary);
             margin-top: 5px;
+            transition: color 0.3s ease;
         }
         .charts-grid {
             display: grid;
@@ -76,10 +126,11 @@ export function generateDashboardHTML(summary: WorkSummary): string {
             margin-bottom: 30px;
         }
         .chart-container {
-            background: white;
-            border: 1px solid #e0e0e0;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 20px;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
         .chart-title {
             font-size: 1.2em;
@@ -94,26 +145,42 @@ export function generateDashboardHTML(summary: WorkSummary): string {
             display: flex;
             justify-content: space-between;
             padding: 10px 0;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--border-light);
+            transition: border-color 0.3s ease;
         }
         .source-name {
             font-weight: bold;
         }
         .source-count {
-            color: #007acc;
+            color: var(--accent-color);
             font-weight: bold;
+            transition: color 0.3s ease;
         }
         .generated-at {
             text-align: center;
-            color: #666;
+            color: var(--text-secondary);
             margin-top: 30px;
             font-size: 0.9em;
+            transition: color 0.3s ease;
+        }
+        .item-detail {
+            margin-left: 20px;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            transition: color 0.3s ease;
+        }
+        .item-more {
+            margin-left: 20px;
+            color: var(--text-tertiary);
+            font-size: 0.8em;
+            transition: color 0.3s ease;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">🌙</button>
             <h1>📊 Worklog Dashboard</h1>
             <p>${summary.dateRange.start.toLocaleDateString()} - ${summary.dateRange.end.toLocaleDateString()}</p>
         </div>
@@ -161,13 +228,13 @@ export function generateDashboardHTML(summary: WorkSummary): string {
 									.slice(0, 3)
 									.map(
 										(item) => `
-                    <div style="margin-left: 20px; color: #666; font-size: 0.9em;">
+                    <div class="item-detail">
                         ${item.timestamp.toLocaleTimeString()} - ${item.title}
                     </div>
                 `,
 									)
 									.join("")}
-                ${items.length > 3 ? `<div style="margin-left: 20px; color: #999; font-size: 0.8em;">...and ${items.length - 3} more</div>` : ""}
+                ${items.length > 3 ? `<div class="item-more">...and ${items.length - 3} more</div>` : ""}
             `,
 							)
 							.join("")}
@@ -179,20 +246,40 @@ export function generateDashboardHTML(summary: WorkSummary): string {
     </div>
 
     <script>
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        
+        const savedTheme = localStorage.getItem('worklog-theme') || 'light';
+        html.setAttribute('data-theme', savedTheme);
+        themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        
+        const getChartColors = (isDark) => ({
+            doughnut: isDark ? [
+                '#FF6B8A', '#4FC3F7', '#FFD54F', '#4DD0E1',
+                '#BA68C8', '#FFB74D', '#FF6B8A', '#BDBDBD',
+                '#4DD0E1', '#FF6B8A'
+            ] : [
+                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF',
+                '#4BC0C0', '#FF6384'
+            ],
+            barBg: isDark ? '#4FC3F7' : '#007acc',
+            barBorder: isDark ? '#29B6F6' : '#005999'
+        });
+        
+        const isDark = savedTheme === 'dark';
+        const colors = getChartColors(isDark);
+
         const sourceCtx = document.getElementById('sourceChart').getContext('2d');
         const sourceData = ${JSON.stringify(chartData)};
 
-        new Chart(sourceCtx, {
+        const sourceChart = new Chart(sourceCtx, {
             type: 'doughnut',
             data: {
                 labels: sourceData.map(d => d.source.toUpperCase()),
                 datasets: [{
                     data: sourceData.map(d => d.count),
-                    backgroundColor: [
-                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
-                        '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF',
-                        '#4BC0C0', '#FF6384'
-                    ],
+                    backgroundColor: colors.doughnut,
                     borderWidth: 1
                 }]
             },
@@ -209,15 +296,15 @@ export function generateDashboardHTML(summary: WorkSummary): string {
         const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
         const hourlyData = ${JSON.stringify(hourlyData)};
 
-        new Chart(hourlyCtx, {
+        const hourlyChart = new Chart(hourlyCtx, {
             type: 'bar',
             data: {
                 labels: Array.from({length: 24}, (_, i) => \`\${i}:00\`),
                 datasets: [{
                     label: 'Activities',
                     data: hourlyData,
-                    backgroundColor: '#007acc',
-                    borderColor: '#005999',
+                    backgroundColor: colors.barBg,
+                    borderColor: colors.barBorder,
                     borderWidth: 1
                 }]
             },
@@ -237,6 +324,23 @@ export function generateDashboardHTML(summary: WorkSummary): string {
                     }
                 }
             }
+        });
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('worklog-theme', newTheme);
+            themeToggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+            
+            const newColors = getChartColors(newTheme === 'dark');
+            sourceChart.data.datasets[0].backgroundColor = newColors.doughnut;
+            sourceChart.update();
+            
+            hourlyChart.data.datasets[0].backgroundColor = newColors.barBg;
+            hourlyChart.data.datasets[0].borderColor = newColors.barBorder;
+            hourlyChart.update();
         });
     </script>
 </body>
