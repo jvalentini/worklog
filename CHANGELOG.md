@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Features
 
+* add Beads issue tracking, project attribution, and trends analysis (#20) — thanks @jvalentini
 * add project-centric summaries with LLM support (#16) — thanks @jvalentini
 * add bash completion support for worklog commands
 * add make target for automated bash completion setup
