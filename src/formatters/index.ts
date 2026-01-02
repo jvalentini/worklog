@@ -1,7 +1,13 @@
-import type { CliOptions, WorkSummary } from "../types.ts";
+import type { CliOptions, ProjectWorkSummary, WorkSummary } from "../types.ts";
 import { formatJson } from "./json.ts";
 import { formatMarkdown } from "./markdown.ts";
 import { formatPlain } from "./plain.ts";
+import {
+	formatProjectsJson,
+	formatProjectsMarkdown,
+	formatProjectsPlain,
+	formatProjectsSlack,
+} from "./projects.ts";
 import { formatSlack } from "./slack.ts";
 
 export type OutputFormat = "markdown" | "json" | "plain" | "slack";
@@ -23,5 +29,18 @@ export function formatOutput(summary: WorkSummary, format: OutputFormat, verbose
 			return formatSlack(summary, verbose);
 		default:
 			return formatMarkdown(summary, verbose);
+	}
+}
+
+export function formatProjectOutput(summary: ProjectWorkSummary, format: OutputFormat): string {
+	switch (format) {
+		case "json":
+			return formatProjectsJson(summary);
+		case "plain":
+			return formatProjectsPlain(summary);
+		case "slack":
+			return formatProjectsSlack(summary);
+		default:
+			return formatProjectsMarkdown(summary);
 	}
 }
