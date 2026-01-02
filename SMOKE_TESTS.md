@@ -117,6 +117,24 @@ worklog cron run
 worklog cron uninstall
 ```
 
+## Progress Output
+
+### Progress Modes
+- [ ] Default mode shows progress: `worklog` (in TTY)
+- [ ] No progress in non-TTY: `worklog 2>&1 | cat`
+- [ ] No progress with JSON: `worklog --json`
+- [ ] Progress forced with flag: `worklog --progress 2>&1 | cat`
+- [ ] Verbose mode shows detailed progress: `worklog -v`
+- [ ] No progress flag disables: `worklog --no-progress`
+
+### Progress Format
+- [ ] Shows "Reading N sources..." at start
+- [ ] Shows [X/N] prefix for each source in non-verbose mode
+- [ ] Shows plain "Reading source-name..." in verbose mode
+- [ ] Shows item count and timing after each source completes
+- [ ] Shows errors gracefully with timing when source fails
+- [ ] Progress messages go to stderr, not stdout
+
 ## Environment Setup for Testing
 
 Ensure these are configured for full testing:
