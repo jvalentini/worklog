@@ -123,6 +123,7 @@ export function aggregateByProject(
 				commits: [],
 				sessions: [],
 				githubActivity: [],
+				otherActivity: [],
 			};
 			projectDailyMap.set(dateKey, dailyActivity);
 		}
@@ -133,6 +134,8 @@ export function aggregateByProject(
 			dailyActivity.sessions.push(item);
 		} else if (isGitHubSource(item.source)) {
 			dailyActivity.githubActivity.push(item);
+		} else {
+			dailyActivity.otherActivity.push(item);
 		}
 	}
 

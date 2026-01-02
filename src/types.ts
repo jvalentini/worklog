@@ -26,6 +26,7 @@ export interface DailyProjectActivity {
 	commits: WorkItem[];
 	sessions: WorkItem[];
 	githubActivity: WorkItem[];
+	otherActivity: WorkItem[];
 	summary?: string;
 }
 
