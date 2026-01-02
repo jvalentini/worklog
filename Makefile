@@ -73,8 +73,9 @@ clean:
 
 completion:
 	@echo "Setting up bash completion for worklog..."
-	@bun bin/worklog.ts completion > ~/.worklog-completion.sh
-	@echo 'source ~/.worklog-completion.sh' >> ~/.bashrc
+	@bun bin/worklog.ts completion > "$(HOME)/.worklog-completion.sh"
+	@touch "$(HOME)/.bashrc"
+	@grep -qxF 'source ~/.worklog-completion.sh' "$(HOME)/.bashrc" || echo 'source ~/.worklog-completion.sh' >> "$(HOME)/.bashrc"
 	@echo "Bash completion installed. Run 'source ~/.bashrc' to activate."
 
 docker-test:
