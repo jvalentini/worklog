@@ -13,9 +13,14 @@ interface CronConfig {
 }
 
 function getWorklogPath(): string {
-	const binPath = process.argv[1] ?? "";
-	if (binPath.includes("/.local/bin/")) {
-		return binPath;
+	const execPath = process.execPath;
+	const scriptPath = process.argv[1] ?? "";
+
+	if (execPath.endsWith("/worklog") || execPath.includes("/worklog-")) {
+		return execPath;
+	}
+	if (scriptPath.includes("/bin/worklog")) {
+		return scriptPath;
 	}
 	return `cd ${process.cwd()} && bun run dev`;
 }
