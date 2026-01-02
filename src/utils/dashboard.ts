@@ -156,6 +156,44 @@ export function generateDashboardHTML(summary: WorkSummary): string {
             font-weight: bold;
             transition: color 0.3s ease;
         }
+        .filters-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--bg-card);
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+        .filters-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .filter-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .filter-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+        }
+        .filter-checkbox:hover {
+            background: var(--border-light);
+        }
+        .filter-checkbox input[type="checkbox"] {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+        .filter-checkbox label {
+            cursor: pointer;
+            user-select: none;
+        }
         .generated-at {
             text-align: center;
             color: var(--text-secondary);
@@ -187,20 +225,36 @@ export function generateDashboardHTML(summary: WorkSummary): string {
 
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-number">${summary.items.length}</div>
+                <div class="stat-number" id="totalActivities">${summary.items.length}</div>
                 <div class="stat-label">Total Activities</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">${sourceGroups.size}</div>
+                <div class="stat-number" id="activeSources">${sourceGroups.size}</div>
                 <div class="stat-label">Active Sources</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">${hourlyData.length === 0 ? 0 : Math.max(...hourlyData, 0)}</div>
+                <div class="stat-number" id="peakHourActivity">${hourlyData.length === 0 ? 0 : Math.max(...hourlyData, 0)}</div>
                 <div class="stat-label">Peak Hour Activity</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">${hourlyData.filter((h) => h > 0).length}</div>
+                <div class="stat-number" id="activeHours">${hourlyData.filter((h) => h > 0).length}</div>
                 <div class="stat-label">Active Hours</div>
+            </div>
+        </div>
+
+        <div class="filters-section">
+            <div class="filters-title">🔍 Filter by Source</div>
+            <div class="filter-controls">
+                ${Array.from(sourceGroups.keys())
+									.map(
+										(source) => `
+                    <div class="filter-checkbox">
+                        <input type="checkbox" id="filter-${source}" value="${source}" checked>
+                        <label for="filter-${source}">${source.toUpperCase()}</label>
+                    </div>
+                `,
+									)
+									.join("")}
             </div>
         </div>
 
@@ -270,9 +324,16 @@ export function generateDashboardHTML(summary: WorkSummary): string {
         const isDark = savedTheme === 'dark';
         const colors = getChartColors(isDark);
 
-        const sourceCtx = document.getElementById('sourceChart').getContext('2d');
+        const allItems = ${JSON.stringify(
+					summary.items.map((item) => ({
+						source: item.source,
+						timestamp: item.timestamp.toISOString(),
+					})),
+				)};
         const sourceData = ${JSON.stringify(chartData)};
+        const originalHourlyData = ${JSON.stringify(hourlyData)};
 
+        const sourceCtx = document.getElementById('sourceChart').getContext('2d');
         const sourceChart = new Chart(sourceCtx, {
             type: 'doughnut',
             data: {
@@ -294,15 +355,13 @@ export function generateDashboardHTML(summary: WorkSummary): string {
         });
 
         const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
-        const hourlyData = ${JSON.stringify(hourlyData)};
-
         const hourlyChart = new Chart(hourlyCtx, {
             type: 'bar',
             data: {
                 labels: Array.from({length: 24}, (_, i) => \`\${i}:00\`),
                 datasets: [{
                     label: 'Activities',
-                    data: hourlyData,
+                    data: originalHourlyData,
                     backgroundColor: colors.barBg,
                     borderColor: colors.barBorder,
                     borderWidth: 1
@@ -324,6 +383,41 @@ export function generateDashboardHTML(summary: WorkSummary): string {
                     }
                 }
             }
+        });
+
+        function updateCharts() {
+            const checkedSources = Array.from(document.querySelectorAll('.filter-checkbox input:checked'))
+                .map(cb => cb.value);
+            
+            const filteredSourceData = sourceData.filter(d => checkedSources.includes(d.source));
+            
+            sourceChart.data.labels = filteredSourceData.map(d => d.source.toUpperCase());
+            sourceChart.data.datasets[0].data = filteredSourceData.map(d => d.count);
+            sourceChart.update();
+            
+            const filteredItems = allItems.filter(item => checkedSources.includes(item.source));
+            const newHourlyData = Array.from({length: 24}, () => 0);
+            for (const item of filteredItems) {
+                const hour = new Date(item.timestamp).getHours();
+                newHourlyData[hour]++;
+            }
+            
+            hourlyChart.data.datasets[0].data = newHourlyData;
+            hourlyChart.update();
+            
+            const totalActivities = filteredItems.length;
+            const activeSources = checkedSources.length;
+            const peakHourActivity = newHourlyData.length === 0 ? 0 : Math.max(...newHourlyData, 0);
+            const activeHours = newHourlyData.filter(h => h > 0).length;
+            
+            document.getElementById('totalActivities').textContent = totalActivities;
+            document.getElementById('activeSources').textContent = activeSources;
+            document.getElementById('peakHourActivity').textContent = peakHourActivity;
+            document.getElementById('activeHours').textContent = activeHours;
+        }
+        
+        document.querySelectorAll('.filter-checkbox input').forEach(checkbox => {
+            checkbox.addEventListener('change', updateCharts);
         });
 
         themeToggle.addEventListener('click', () => {
