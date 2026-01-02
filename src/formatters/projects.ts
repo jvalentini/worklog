@@ -1,6 +1,7 @@
 import { format, isSameDay } from "date-fns";
 import { getCommitSubjects, getGitHubDescriptions, getSessionDescriptions } from "../aggregator.ts";
 import type { DailyProjectActivity, ProjectActivity, ProjectWorkSummary } from "../types.ts";
+import { cleanSubject } from "../utils/commits.ts";
 import { formatDateRange } from "../utils/dates.ts";
 
 function formatDailyProject(
@@ -133,20 +134,6 @@ function generateNarrativeSummary(activity: DailyProjectActivity): string {
 	}
 
 	return parts.join(" with ");
-}
-
-function cleanSubject(subject: string): string {
-	let cleaned = subject.replace(
-		/^(feat|fix|docs|refactor|test|chore|style|perf|ci|build)(\([^)]*\))?:\s*/i,
-		"",
-	);
-	cleaned = cleaned.replace(/^\[\]\s*/, "");
-	const pipeIndex = cleaned.indexOf("|");
-	if (pipeIndex !== -1) {
-		cleaned = cleaned.slice(0, pipeIndex).trim();
-	}
-	cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
-	return cleaned;
 }
 
 function analyzeCommitTypes(subjects: string[]): string[] {
