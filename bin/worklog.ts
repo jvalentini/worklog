@@ -14,6 +14,10 @@ import { formatDateRange, parseDateRange } from "../src/utils/dates.ts";
 
 const VERSION = pkg.version;
 
+function parseCommaSeparated(value: string): string[] {
+	return value.split(",").map((s) => s.trim());
+}
+
 program
 	.name("worklog")
 	.description(
@@ -35,8 +39,9 @@ program
 	.option(
 		"--sources <sources>",
 		"Comma-separated list of sources (opencode,claude,codex,factory,git,github,vscode,cursor,terminal,filesystem)",
+		parseCommaSeparated,
 	)
-	.option("--repos <repos>", "Comma-separated list of git repo paths")
+	.option("--repos <repos>", "Comma-separated list of git repo paths", parseCommaSeparated)
 	.option("--llm", "Enable LLM summarization", false)
 	.option("--trends", "Show activity trends compared to previous period", false)
 	.option("--dashboard", "Launch interactive web dashboard", false)
@@ -63,8 +68,7 @@ async function run(opts: CliOptions): Promise<void> {
 	}
 
 	if (opts.repos) {
-		const repos = opts.repos as unknown as string;
-		config.gitRepos = repos.split(",").map((r) => r.trim());
+		config.gitRepos = opts.repos;
 	}
 
 	const dateRange = parseDateRange(opts);
@@ -73,9 +77,7 @@ async function run(opts: CliOptions): Promise<void> {
 		console.error(chalk.dim(`Date range: ${formatDateRange(dateRange)}`));
 	}
 
-	const sourceNames = opts.sources
-		? (opts.sources as unknown as string).split(",").map((s) => s.trim())
-		: config.defaultSources;
+	const sourceNames = opts.sources ?? config.defaultSources;
 
 	const readers = getReadersByNames(sourceNames);
 
