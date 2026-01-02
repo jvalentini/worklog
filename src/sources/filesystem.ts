@@ -10,19 +10,36 @@ interface FileActivity {
 	size: number;
 }
 
+export interface FilesystemAdapter {
+	readdir(path: string): Promise<Array<{ name: string; isDirectory: () => boolean }>>;
+	stat(path: string): Promise<{ mtime: Date; size: number }>;
+}
+
+class NodeFilesystemAdapter implements FilesystemAdapter {
+	async readdir(path: string): Promise<Array<{ name: string; isDirectory: () => boolean }>> {
+		return readdir(path, { withFileTypes: true });
+	}
+
+	async stat(path: string): Promise<{ mtime: Date; size: number }> {
+		const stats = await stat(path);
+		return { mtime: stats.mtime, size: stats.size };
+	}
+}
+
 async function scanDirectory(
 	dirPath: string,
 	dateRange: DateRange,
 	maxDepth: number,
 	currentDepth: number,
 	skipDirs: Set<string>,
+	adapter: FilesystemAdapter = new NodeFilesystemAdapter(),
 ): Promise<FileActivity[]> {
 	const activities: FileActivity[] = [];
 
 	if (currentDepth > maxDepth) return activities;
 
 	try {
-		const entries = await readdir(dirPath, { withFileTypes: true });
+		const entries = await adapter.readdir(dirPath);
 
 		for (const entry of entries) {
 			if (skipDirs.has(entry.name)) continue;
@@ -30,7 +47,7 @@ async function scanDirectory(
 			const fullPath = join(dirPath, entry.name);
 
 			try {
-				const stats = await stat(fullPath);
+				const stats = await adapter.stat(fullPath);
 				const modified = new Date(stats.mtime);
 
 				if (!entry.isDirectory() && isWithinRange(modified, dateRange)) {
@@ -48,6 +65,7 @@ async function scanDirectory(
 						maxDepth,
 						currentDepth + 1,
 						skipDirs,
+						adapter,
 					);
 					activities.push(...nested);
 				}
@@ -77,11 +95,15 @@ function aggregateFileActivity(basePath: string, activities: FileActivity[]) {
 	return { extensions, directories, totalFiles: activities.length };
 }
 
-export const filesystemReader: SourceReader = {
-	name: "filesystem",
-	async read(dateRange: DateRange, config: Config): Promise<WorkItem[]> {
-		try {
-			const basePath = expandPath(config.paths.filesystem);
+export function createFilesystemReader(adapter?: FilesystemAdapter): SourceReader {
+	const fsAdapter = adapter ?? new NodeFilesystemAdapter();
+
+	return {
+		name: "filesystem",
+		async read(dateRange: DateRange, config: Config): Promise<WorkItem[]> {
+			if (config.gitRepos.length === 0) {
+				return [];
+			}
 
 			const skipDirs = new Set([
 				"node_modules",
@@ -94,44 +116,59 @@ export const filesystemReader: SourceReader = {
 				".cache",
 			]);
 
-			const activities = await scanDirectory(basePath, dateRange, 3, 0, skipDirs);
-			if (activities.length === 0) return [];
+			const items: WorkItem[] = [];
 
-			const { extensions, directories, totalFiles } = aggregateFileActivity(basePath, activities);
+			for (const repo of config.gitRepos) {
+				try {
+					const repoPath = expandPath(repo);
+					const activities = await scanDirectory(repoPath, dateRange, 3, 0, skipDirs, fsAdapter);
 
-			const topExtensions = Array.from(extensions.entries())
-				.sort((a, b) => b[1] - a[1])
-				.slice(0, 5);
+					if (activities.length === 0) continue;
 
-			const topDirectories = Array.from(directories.entries())
-				.sort((a, b) => b[1] - a[1])
-				.slice(0, 3);
+					const { extensions, directories, totalFiles } = aggregateFileActivity(
+						repoPath,
+						activities,
+					);
 
-			const topFiles = activities
-				.slice()
-				.sort((a, b) => b.modified.getTime() - a.modified.getTime())
-				.slice(0, 10)
-				.map((activity) => relative(basePath, activity.path));
+					const topExtensions = Array.from(extensions.entries())
+						.sort((a, b) => b[1] - a[1])
+						.slice(0, 5);
 
-			const extensionSummary = topExtensions.map(([ext, count]) => `${ext}(${count})`).join(", ");
+					const topDirectories = Array.from(directories.entries())
+						.sort((a, b) => b[1] - a[1])
+						.slice(0, 3);
 
-			return [
-				{
-					source: "filesystem",
-					timestamp: new Date(),
-					title: `File System: Modified ${totalFiles} file${totalFiles !== 1 ? "s" : ""}`,
-					description: `Types: ${extensionSummary}`,
-					metadata: {
-						basePath,
-						totalFiles,
-						topExtensions,
-						topDirectories,
-						topFiles,
-					},
-				},
-			];
-		} catch {
-			return [];
-		}
-	},
-};
+					const topFiles = activities
+						.slice()
+						.sort((a, b) => b.modified.getTime() - a.modified.getTime())
+						.slice(0, 10)
+						.map((activity) => relative(repoPath, activity.path));
+
+					const extensionSummary = topExtensions
+						.map(([ext, count]) => `${ext}(${count})`)
+						.join(", ");
+
+					items.push({
+						source: "filesystem",
+						timestamp: new Date(),
+						title: `File System: Modified ${totalFiles} file${totalFiles !== 1 ? "s" : ""}`,
+						description: `Types: ${extensionSummary}`,
+						metadata: {
+							repo,
+							project: repo.replace(/\/$/, "").split("/").pop() ?? repo,
+							basePath: repoPath,
+							totalFiles,
+							topExtensions,
+							topDirectories,
+							topFiles,
+						},
+					});
+				} catch {}
+			}
+
+			return items;
+		},
+	};
+}
+
+export const filesystemReader = createFilesystemReader();
