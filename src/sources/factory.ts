@@ -1,31 +1,8 @@
-import { readdir } from "node:fs/promises";
-import { basename, dirname, join } from "node:path";
+import { basename, dirname } from "node:path";
 import type { Config, DateRange, SourceReader, WorkItem } from "../types.ts";
 import { expandPath } from "../utils/config.ts";
 import { isWithinRange } from "../utils/dates.ts";
-
-async function findJsonlFiles(dir: string): Promise<string[]> {
-	const results: string[] = [];
-
-	try {
-		const entries = await readdir(dir, { withFileTypes: true });
-
-		for (const entry of entries) {
-			const fullPath = join(dir, entry.name);
-
-			if (entry.isDirectory()) {
-				const nested = await findJsonlFiles(fullPath);
-				results.push(...nested);
-			} else if (entry.name.endsWith(".jsonl")) {
-				results.push(fullPath);
-			}
-		}
-	} catch {
-		return results;
-	}
-
-	return results;
-}
+import { findJsonlFiles } from "../utils/jsonl.ts";
 
 async function parseSessionFile(filePath: string, dateRange: DateRange): Promise<WorkItem[]> {
 	const items: WorkItem[] = [];

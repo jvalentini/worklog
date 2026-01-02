@@ -1,6 +1,7 @@
 import { format } from "date-fns";
 import { getCommitSubjects, getGitHubDescriptions, getSessionDescriptions } from "./aggregator.ts";
 import type { Config, DailyProjectActivity, ProjectActivity, ProjectWorkSummary } from "./types.ts";
+import { cleanSubject } from "./utils/commits.ts";
 
 interface OpenAIMessage {
 	role: "system" | "user" | "assistant";
@@ -193,15 +194,6 @@ function generateFallbackSummary(activity: DailyProjectActivity): string {
 	}
 
 	return parts.join("; ");
-}
-
-function cleanSubject(subject: string): string {
-	let cleaned = subject.replace(
-		/^(feat|fix|docs|refactor|test|chore|style|perf|ci|build)(\([^)]*\))?:\s*/i,
-		"",
-	);
-	cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
-	return cleaned;
 }
 
 export async function summarizeProjectActivity(
