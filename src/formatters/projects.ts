@@ -428,7 +428,7 @@ export function formatProjectsJson(summary: ProjectWorkSummary): string {
 		},
 		projects: summary.projects.map((project) => ({
 			name: project.projectName,
-			path: project.projectPath,
+			path: project.projectPath === "(unattributed)" ? null : project.projectPath,
 			activity: project.dailyActivity.map((daily) => ({
 				date: format(daily.date, "yyyy-MM-dd"),
 				summary: daily.summary ?? null,
