@@ -58,6 +58,19 @@ function formatDailyProject(
 		lines.push("");
 	}
 
+	if (daily.otherActivity && daily.otherActivity.length > 0) {
+		lines.push(`**Other Activity** (${daily.otherActivity.length}):`);
+		for (const item of daily.otherActivity) {
+			let title = item.title;
+			const bracketMatch = /^\[([^\]]+)\]\s*/.exec(title);
+			if (bracketMatch) {
+				title = title.slice(bracketMatch[0].length);
+			}
+			lines.push(`- ${title}`);
+		}
+		lines.push("");
+	}
+
 	return lines.join("\n");
 }
 
@@ -92,6 +105,18 @@ function getEnhancedSummaryParts(activity: DailyProjectActivity): string[] {
 		}
 	}
 
+	if (parts.length === 0 && activity.otherActivity && activity.otherActivity.length > 0) {
+		const first = activity.otherActivity[0];
+		if (first) {
+			let title = first.title;
+			const bracketMatch = /^\[([^\]]+)\]\s*/.exec(title);
+			if (bracketMatch) {
+				title = title.slice(bracketMatch[0].length);
+			}
+			parts.push(title);
+		}
+	}
+
 	if (parts.length === 0) {
 		parts.push("Development activity");
 	}
@@ -110,6 +135,7 @@ function generateNarrativeSummary(activity: DailyProjectActivity): string {
 	const commitCount = activity.commits.length;
 	const sessionCount = activity.sessions.length;
 	const githubCount = activity.githubActivity.length;
+	const otherCount = activity.otherActivity ? activity.otherActivity.length : 0;
 
 	if (commitCount > 0) {
 		const subjects = getCommitSubjects(activity.commits);
@@ -128,6 +154,12 @@ function generateNarrativeSummary(activity: DailyProjectActivity): string {
 
 	if (githubCount > 0) {
 		parts.push(`${githubCount} GitHub event${githubCount > 1 ? "s" : ""}`);
+	}
+
+	if (otherCount > 0 && activity.otherActivity) {
+		const sources = new Set(activity.otherActivity.map((item) => item.source));
+		const sourceNames = Array.from(sources).join("/");
+		parts.push(`${sourceNames} activity`);
 	}
 
 	if (parts.length === 0) {

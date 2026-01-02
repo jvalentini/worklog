@@ -28,6 +28,7 @@ function createDailyActivity(overrides: Partial<DailyProjectActivity> = {}): Dai
 		commits: [],
 		sessions: [],
 		githubActivity: [],
+		otherActivity: [],
 		...overrides,
 	};
 }
