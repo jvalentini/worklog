@@ -4,16 +4,12 @@ import chalk from "chalk";
 import { program } from "commander";
 import { aggregateByProject } from "../src/aggregator.ts";
 import { cronInstall, cronStatus, cronUninstall } from "../src/cron.ts";
-import { formatOutput, formatProjectOutput, getFormat } from "../src/formatters/index.ts";
+import { formatProjectOutput, getFormat } from "../src/formatters/index.ts";
 import { summarizeProjectActivity } from "../src/llm.ts";
 import { getReadersByNames } from "../src/sources/index.ts";
 import type { CliOptions, SourceType, WorkItem, WorkSummary } from "../src/types.ts";
 import { loadConfig } from "../src/utils/config.ts";
 import { formatDateRange, parseDateRange } from "../src/utils/dates.ts";
-
-interface ExtendedCliOptions extends CliOptions {
-	legacy?: boolean;
-}
 
 const VERSION = "0.1.0";
 
@@ -44,10 +40,9 @@ program
 	.option("--trends", "Show activity trends compared to previous period", false)
 	.option("--dashboard", "Launch interactive web dashboard", false)
 	.option("-v, --verbose", "Show detailed output (default is concise summaries)", false)
-	.option("--legacy", "Use legacy source-centric output format", false)
 	.action(async (opts) => {
 		try {
-			await run(opts as ExtendedCliOptions);
+			await run(opts as CliOptions);
 		} catch (error) {
 			if (opts.verbose) {
 				console.error(chalk.red("Error:"), error);
@@ -58,7 +53,7 @@ program
 		}
 	});
 
-async function run(opts: ExtendedCliOptions): Promise<void> {
+async function run(opts: CliOptions): Promise<void> {
 	const config = await loadConfig();
 
 	if (opts.llm) {
@@ -143,68 +138,29 @@ async function run(opts: ExtendedCliOptions): Promise<void> {
 
 	const format = getFormat(opts);
 
-	// Use new project-centric output by default, unless --legacy is specified
-	if (!opts.legacy && config.gitRepos.length > 0) {
-		if (opts.verbose) {
-			console.error(chalk.dim("Aggregating by project..."));
-		}
-
-		let projectSummary = aggregateByProject(allItems, config, dateRange);
-
-		if (opts.verbose) {
-			console.error(chalk.dim(`Found ${projectSummary.projects.length} projects with activity`));
-		}
-
-		if (config.llm.enabled && projectSummary.projects.length > 0) {
-			if (opts.verbose) {
-				console.error(chalk.dim("Generating LLM summaries..."));
-			}
-			projectSummary = await summarizeProjectActivity(projectSummary, config);
-		}
-
-		const output = formatProjectOutput(projectSummary, format);
-		console.log(output);
-		return;
+	if (opts.verbose) {
+		console.error(chalk.dim("Aggregating by project..."));
 	}
 
-	// Legacy source-centric output
-	let output = formatOutput(summary, format, opts.verbose);
+	let projectSummary = aggregateByProject(allItems, config, dateRange);
+
+	if (opts.verbose) {
+		console.error(chalk.dim(`Found ${projectSummary.projects.length} projects with activity`));
+	}
+
+	if (config.llm.enabled && projectSummary.projects.length > 0) {
+		if (opts.verbose) {
+			console.error(chalk.dim("Generating LLM summaries..."));
+		}
+		projectSummary = await summarizeProjectActivity(projectSummary, config);
+	}
+
+	const output = formatProjectOutput(projectSummary, format, opts.verbose);
 
 	if (opts.trends) {
-		const { calculateTrends, formatTrendSummary, getPreviousDateRange } = await import(
-			"../src/utils/trends.ts"
+		console.error(
+			chalk.yellow("Note: Trends feature is not yet supported in project mode. Coming soon!"),
 		);
-
-		const previousRange = getPreviousDateRange(dateRange);
-		const previousItems: WorkItem[] = [];
-
-		for (const reader of readers) {
-			try {
-				const items = await reader.read(previousRange, config);
-				previousItems.push(...items);
-			} catch {}
-		}
-
-		previousItems.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-
-		const previousSources = [...new Set(previousItems.map((item) => item.source))] as SourceType[];
-		const previousSummary: WorkSummary = {
-			dateRange: previousRange,
-			items: previousItems,
-			sources: previousSources,
-			generatedAt: new Date(),
-		};
-
-		const trendData = calculateTrends(summary, previousSummary);
-		const trendOutput = formatTrendSummary(trendData);
-
-		if (format === "json") {
-			const jsonSummary = JSON.parse(output);
-			jsonSummary.trends = trendData;
-			output = JSON.stringify(jsonSummary, null, 2);
-		} else {
-			output = `${output}\n\n${trendOutput}`;
-		}
 	}
 
 	console.log(output);
@@ -249,7 +205,7 @@ _worklog_completions() {
   COMPREPLY=()
   cur="\${COMP_WORDS[COMP_CWORD]}"
   prev="\${COMP_WORDS[COMP_CWORD-1]}"
-  opts="-V --version -d --date -y --yesterday -w --week -m --month -l --last -j --json -p --plain -s --slack --sources --repos --llm --trends --dashboard -v --verbose --legacy -h --help"
+  opts="-V --version -d --date -y --yesterday -w --week -m --month -l --last -j --json -p --plain -s --slack --sources --repos --llm --trends --dashboard -v --verbose -h --help"
 
   # Prefer bash-completion helpers when available.
   if declare -F _init_completion >/dev/null 2>&1; then

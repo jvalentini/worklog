@@ -170,24 +170,21 @@ function generateFallbackSummary(activity: DailyProjectActivity): string {
 
 	if (activity.commits.length > 0) {
 		const subjects = getCommitSubjects(activity.commits);
-		const firstSubject = subjects[0];
-		if (firstSubject) {
-			let cleaned = firstSubject.replace(
-				/^(feat|fix|docs|refactor|test|chore|style|perf|ci|build)(\([^)]*\))?:\s*/i,
-				"",
-			);
-			cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
-			parts.push(cleaned);
-		}
-		if (activity.commits.length > 1) {
-			parts.push(`and ${activity.commits.length - 1} other changes`);
+		if (subjects.length <= 3) {
+			parts.push(...subjects.map((s) => cleanSubject(s)));
+		} else {
+			const first = subjects[0];
+			if (first) {
+				parts.push(cleanSubject(first));
+			}
 		}
 	}
 
-	if (activity.sessions.length > 0 && parts.length === 0) {
+	if (parts.length === 0 && activity.sessions.length > 0) {
 		const descriptions = getSessionDescriptions(activity.sessions);
-		if (descriptions[0]) {
-			parts.push(descriptions[0]);
+		const first = descriptions[0];
+		if (first) {
+			parts.push(first);
 		}
 	}
 
@@ -195,7 +192,16 @@ function generateFallbackSummary(activity: DailyProjectActivity): string {
 		return "Development activity";
 	}
 
-	return parts.join(" ");
+	return parts.join("; ");
+}
+
+function cleanSubject(subject: string): string {
+	let cleaned = subject.replace(
+		/^(feat|fix|docs|refactor|test|chore|style|perf|ci|build)(\([^)]*\))?:\s*/i,
+		"",
+	);
+	cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+	return cleaned;
 }
 
 export async function summarizeProjectActivity(
