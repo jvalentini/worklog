@@ -1,7 +1,7 @@
 {
-  "pid": 62787,
-  "parent_pid": 62758,
+  "pid": 223645,
+  "parent_pid": 223615,
   "database": "/home/justin/code/worklog/.beads/beads.db",
   "version": "0.30.0",
-  "started_at": "2026-01-02T15:20:59.032705755Z"
+  "started_at": "2026-01-02T18:52:42.873215346Z"
 }

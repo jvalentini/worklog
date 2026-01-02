@@ -50,4 +50,44 @@ describe("worklog CLI e2e", () => {
 		const exitCode = await proc.exited;
 		expect(exitCode).toBe(0);
 	});
+
+	test("parses comma-separated sources correctly", async () => {
+		const proc = spawn(["bun", "run", "bin/worklog.ts", "--sources", "git,github,opencode"], {
+			stdout: "pipe",
+			stderr: "pipe",
+		});
+
+		const exitCode = await proc.exited;
+		expect(exitCode).toBe(0);
+	});
+
+	test("parses comma-separated repos correctly", async () => {
+		const proc = spawn(
+			["bun", "run", "bin/worklog.ts", "--repos", "~/code/project1,~/code/project2"],
+			{
+				stdout: "pipe",
+				stderr: "pipe",
+				env: {
+					...process.env,
+					WORKLOG_SOURCES: "git",
+				},
+			},
+		);
+
+		const exitCode = await proc.exited;
+		expect(exitCode).toBe(0);
+	});
+
+	test("handles sources and repos together", async () => {
+		const proc = spawn(
+			["bun", "run", "bin/worklog.ts", "--sources", "git,github", "--repos", "~/code/test"],
+			{
+				stdout: "pipe",
+				stderr: "pipe",
+			},
+		);
+
+		const exitCode = await proc.exited;
+		expect(exitCode).toBe(0);
+	});
 });
