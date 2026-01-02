@@ -329,8 +329,263 @@ describe("Misc bucket behavior", () => {
 		const result = formatProjectsMarkdown(summary, false);
 
 		expect(result).toContain("Weekly Standup");
-		expect(result).toContain("**worklog**:");
-		expect(result).toContain("**Misc**:");
+		expect(result).toContain("## worklog");
+		expect(result).toContain("## Misc");
+	});
+});
+
+describe("weekly project rollup with PR/branch lines", () => {
+	test("renders PR opened lines with URLs in weekly format", () => {
+		const summary = createSummary({
+			dateRange: {
+				start: new Date("2025-01-01T00:00:00Z"),
+				end: new Date("2025-01-07T23:59:59Z"),
+			},
+			projects: [
+				createProject({
+					projectName: "worklog",
+					dailyActivity: [
+						createDailyActivity({
+							date: new Date("2025-01-02T00:00:00Z"),
+							githubActivity: [
+								createWorkItem({
+									source: "github",
+									title: "[worklog] PR #42 opened: Add new feature",
+									metadata: {
+										type: "pr",
+										number: 42,
+										action: "opened",
+										url: "https://github.com/user/worklog/pull/42",
+										title: "Add new feature",
+									},
+								}),
+							],
+						}),
+					],
+				}),
+			],
+		});
+
+		const result = formatProjectsMarkdown(summary, false);
+
+		expect(result).toContain("## worklog");
+		expect(result).toContain(
+			"Opened PR #42: Add new feature (https://github.com/user/worklog/pull/42)",
+		);
+	});
+
+	test("renders PR merged lines with URLs in weekly format", () => {
+		const summary = createSummary({
+			dateRange: {
+				start: new Date("2025-01-01T00:00:00Z"),
+				end: new Date("2025-01-07T23:59:59Z"),
+			},
+			projects: [
+				createProject({
+					projectName: "worklog",
+					dailyActivity: [
+						createDailyActivity({
+							date: new Date("2025-01-03T00:00:00Z"),
+							githubActivity: [
+								createWorkItem({
+									source: "github",
+									title: "[worklog] PR #42 merged: Add new feature",
+									metadata: {
+										type: "pr",
+										number: 42,
+										action: "merged",
+										url: "https://github.com/user/worklog/pull/42",
+										title: "Add new feature",
+									},
+								}),
+							],
+						}),
+					],
+				}),
+			],
+		});
+
+		const result = formatProjectsMarkdown(summary, false);
+
+		expect(result).toContain("## worklog");
+		expect(result).toContain(
+			"Merged PR #42: Add new feature (https://github.com/user/worklog/pull/42)",
+		);
+	});
+
+	test("renders merged branch lines in weekly format", () => {
+		const summary = createSummary({
+			dateRange: {
+				start: new Date("2025-01-01T00:00:00Z"),
+				end: new Date("2025-01-07T23:59:59Z"),
+			},
+			projects: [
+				createProject({
+					projectName: "worklog",
+					dailyActivity: [
+						createDailyActivity({
+							date: new Date("2025-01-04T00:00:00Z"),
+							commits: [
+								createWorkItem({
+									source: "git",
+									title: "[worklog] Merge feature/auth into main",
+									metadata: {
+										type: "branch",
+										action: "merged",
+										sourceBranch: "feature/auth",
+										targetBranch: "main",
+										isPrMerge: false,
+									},
+								}),
+							],
+						}),
+					],
+				}),
+			],
+		});
+
+		const result = formatProjectsMarkdown(summary, false);
+
+		expect(result).toContain("## worklog");
+		expect(result).toContain("Merged branch feature/auth → main");
+	});
+
+	test("renders PR lines before other activity in weekly format", () => {
+		const summary = createSummary({
+			dateRange: {
+				start: new Date("2025-01-01T00:00:00Z"),
+				end: new Date("2025-01-07T23:59:59Z"),
+			},
+			projects: [
+				createProject({
+					projectName: "worklog",
+					dailyActivity: [
+						createDailyActivity({
+							date: new Date("2025-01-02T00:00:00Z"),
+							commits: [createWorkItem({ title: "feat: add logging" })],
+							githubActivity: [
+								createWorkItem({
+									source: "github",
+									title: "[worklog] PR #10 opened",
+									metadata: {
+										type: "pr",
+										number: 10,
+										action: "opened",
+										url: "https://github.com/user/worklog/pull/10",
+										title: "Add feature",
+									},
+								}),
+							],
+						}),
+					],
+				}),
+			],
+		});
+
+		const result = formatProjectsMarkdown(summary, false);
+
+		const prIndex = result.indexOf("Opened PR #10");
+		const commitIndex = result.indexOf("Add logging");
+
+		expect(prIndex).toBeGreaterThan(-1);
+		expect(commitIndex).toBeGreaterThan(-1);
+		expect(prIndex).toBeLessThan(commitIndex);
+	});
+
+	test("weekly rollup aggregates activity from multiple days", () => {
+		const summary = createSummary({
+			dateRange: {
+				start: new Date("2025-01-01T00:00:00Z"),
+				end: new Date("2025-01-07T23:59:59Z"),
+			},
+			projects: [
+				createProject({
+					projectName: "worklog",
+					dailyActivity: [
+						createDailyActivity({
+							date: new Date("2025-01-01T00:00:00Z"),
+							commits: [createWorkItem({ title: "feat: day 1" })],
+						}),
+						createDailyActivity({
+							date: new Date("2025-01-02T00:00:00Z"),
+							githubActivity: [
+								createWorkItem({
+									source: "github",
+									metadata: {
+										type: "pr",
+										number: 15,
+										action: "opened",
+										url: "https://github.com/user/worklog/pull/15",
+										title: "Day 2 PR",
+									},
+								}),
+							],
+						}),
+						createDailyActivity({
+							date: new Date("2025-01-03T00:00:00Z"),
+							commits: [createWorkItem({ title: "fix: day 3" })],
+						}),
+					],
+				}),
+			],
+		});
+
+		const result = formatProjectsMarkdown(summary, false);
+
+		expect(result).toContain("## worklog");
+		expect(result).toContain("Opened PR #15");
+		expect(result).toContain("Day 1");
+	});
+
+	test("deduplicates PR lines with same number and action", () => {
+		const summary = createSummary({
+			dateRange: {
+				start: new Date("2025-01-01T00:00:00Z"),
+				end: new Date("2025-01-07T23:59:59Z"),
+			},
+			projects: [
+				createProject({
+					projectName: "worklog",
+					dailyActivity: [
+						createDailyActivity({
+							date: new Date("2025-01-01T00:00:00Z"),
+							githubActivity: [
+								createWorkItem({
+									source: "github",
+									metadata: {
+										type: "pr",
+										number: 42,
+										action: "opened",
+										url: "https://github.com/user/worklog/pull/42",
+										title: "Feature A",
+									},
+								}),
+							],
+						}),
+						createDailyActivity({
+							date: new Date("2025-01-02T00:00:00Z"),
+							githubActivity: [
+								createWorkItem({
+									source: "github",
+									metadata: {
+										type: "pr",
+										number: 42,
+										action: "opened",
+										url: "https://github.com/user/worklog/pull/42",
+										title: "Feature A",
+									},
+								}),
+							],
+						}),
+					],
+				}),
+			],
+		});
+
+		const result = formatProjectsMarkdown(summary, false);
+
+		const matches = result.match(/Opened PR #42/g);
+		expect(matches).toHaveLength(1);
 	});
 });
 
