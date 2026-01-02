@@ -230,4 +230,27 @@ cron
 		await cronStatus();
 	});
 
+program
+	.command("completion")
+	.description("generate bash completion script")
+	.action(() => {
+		console.log(`#!/bin/bash
+
+_worklog_completions() {
+  local cur prev opts
+  COMPREPLY=()
+  cur="\${COMP_WORDS[COMP_CWORD]}"
+  prev="\${COMP_WORDS[COMP_CWORD-1]}"
+  opts="-V --version -d --date -y --yesterday -w --week -m --month -j --json -p --plain -s --slack --sources --repos --no-llm --trends --dashboard -v --verbose --legacy -h --help"
+
+  if [[ \${cur} == -* ]] ; then
+    COMPREPLY=( $(compgen -W "\${opts}" -- \${cur}) )
+    return 0
+  fi
+}
+
+complete -F _worklog_completions worklog
+`);
+	});
+
 program.parse();

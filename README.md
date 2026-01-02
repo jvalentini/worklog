@@ -56,6 +56,23 @@ bun install
 bun link
 ```
 
+### Bash Completion
+
+To enable bash completion for worklog commands:
+
+```bash
+# Generate completion script
+worklog completion > ~/.worklog-completion.sh
+
+# Source it in your ~/.bashrc or ~/.bash_profile
+echo 'source ~/.worklog-completion.sh' >> ~/.bashrc
+
+# Reload your bash profile
+source ~/.bashrc
+```
+
+The completion supports all command-line options and flags.
+
 ## Usage
 
 ```bash
