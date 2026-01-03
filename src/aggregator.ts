@@ -200,3 +200,57 @@ export function getGitHubDescriptions(activity: WorkItem[]): string[] {
 		return title;
 	});
 }
+
+/**
+ * Ticket reference extracted from a commit.
+ */
+export interface TicketInfo {
+	id: string;
+	type: string;
+	project?: string;
+	number?: number;
+	url?: string;
+}
+
+/**
+ * Extract all unique tickets from a list of commits.
+ */
+export function extractTicketsFromCommits(commits: WorkItem[]): TicketInfo[] {
+	const seenIds = new Set<string>();
+	const tickets: TicketInfo[] = [];
+
+	for (const commit of commits) {
+		const commitTickets = commit.metadata?.tickets;
+		if (!Array.isArray(commitTickets)) continue;
+
+		for (const ticket of commitTickets) {
+			if (typeof ticket !== "object" || ticket === null) continue;
+
+			const id = (ticket as { id?: unknown }).id;
+			if (typeof id !== "string") continue;
+
+			const normalizedId = id.toUpperCase();
+			if (seenIds.has(normalizedId)) continue;
+			seenIds.add(normalizedId);
+
+			tickets.push({
+				id,
+				type: String((ticket as { type?: unknown }).type ?? "unknown"),
+				project:
+					typeof (ticket as { project?: unknown }).project === "string"
+						? (ticket as { project: string }).project
+						: undefined,
+				number:
+					typeof (ticket as { number?: unknown }).number === "number"
+						? (ticket as { number: number }).number
+						: undefined,
+				url:
+					typeof (ticket as { url?: unknown }).url === "string"
+						? (ticket as { url: string }).url
+						: undefined,
+			});
+		}
+	}
+
+	return tickets;
+}

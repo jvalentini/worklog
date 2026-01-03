@@ -1,5 +1,11 @@
 import { format, startOfWeek } from "date-fns";
-import { getCommitSubjects, getGitHubDescriptions, getSessionDescriptions } from "../aggregator.ts";
+import {
+	extractTicketsFromCommits,
+	getCommitSubjects,
+	getGitHubDescriptions,
+	getSessionDescriptions,
+	type TicketInfo,
+} from "../aggregator.ts";
 import type { ContextCluster } from "../context/analyzer.ts";
 import type { SmartSummaryResult } from "../llm.ts";
 import type {
@@ -27,6 +33,24 @@ function isSingleDay(summary: ProjectWorkSummary): boolean {
 		start.getMonth() === end.getMonth() &&
 		start.getDate() === end.getDate()
 	);
+}
+
+/**
+ * Format ticket references for display.
+ * @param tickets - Array of ticket references
+ * @param style - "compact" for IDs only, "markdown" for markdown links
+ */
+function formatTicketRefs(
+	tickets: TicketInfo[],
+	style: "compact" | "markdown" = "compact",
+): string {
+	if (tickets.length === 0) return "";
+
+	if (style === "markdown") {
+		return tickets.map((t) => (t.url ? `[${t.id}](${t.url})` : t.id)).join(", ");
+	}
+
+	return tickets.map((t) => t.id).join(", ");
 }
 
 function formatDailyProject(
@@ -101,6 +125,13 @@ function formatDailyProject(
 			for (const subject of group.subjects) {
 				lines.push(`- ${subject}`);
 			}
+			lines.push("");
+		}
+
+		// Show related tickets if any
+		const tickets = extractTicketsFromCommits(remainder.commits);
+		if (tickets.length > 0) {
+			lines.push(`**Related Tickets**: ${formatTicketRefs(tickets, "markdown")}`);
 			lines.push("");
 		}
 	}
@@ -780,6 +811,13 @@ function formatWeeklyProject(project: ProjectActivity, verbose: boolean): string
 					}
 					lines.push("");
 				}
+
+				// Show related tickets if any
+				const tickets = extractTicketsFromCommits(weekly.commits);
+				if (tickets.length > 0) {
+					lines.push(`**Related Tickets**: ${formatTicketRefs(tickets, "markdown")}`);
+					lines.push("");
+				}
 			}
 
 			if (weekly.sessions.length > 0) {
@@ -1286,17 +1324,28 @@ export function formatProjectsJson(summary: ProjectWorkSummary, _verbose = false
 			start: summary.dateRange.start.toISOString(),
 			end: summary.dateRange.end.toISOString(),
 		},
-		projects: summary.projects.map((project) => ({
-			name: project.projectName,
-			path: project.projectPath === "(unattributed)" ? null : project.projectPath,
-			activity: project.dailyActivity.map((daily) => ({
-				date: format(daily.date, "yyyy-MM-dd"),
-				summary: daily.summary ?? null,
-				commitCount: daily.commits.length,
-				sessionCount: daily.sessions.length,
-				githubActivityCount: daily.githubActivity.length,
-			})),
-		})),
+		projects: summary.projects.map((project) => {
+			// Collect all tickets from all daily commits for this project
+			const allCommits = project.dailyActivity.flatMap((d) => d.commits);
+			const projectTickets = extractTicketsFromCommits(allCommits);
+
+			return {
+				name: project.projectName,
+				path: project.projectPath === "(unattributed)" ? null : project.projectPath,
+				tickets: projectTickets.length > 0 ? projectTickets : null,
+				activity: project.dailyActivity.map((daily) => {
+					const dailyTickets = extractTicketsFromCommits(daily.commits);
+					return {
+						date: format(daily.date, "yyyy-MM-dd"),
+						summary: daily.summary ?? null,
+						commitCount: daily.commits.length,
+						sessionCount: daily.sessions.length,
+						githubActivityCount: daily.githubActivity.length,
+						tickets: dailyTickets.length > 0 ? dailyTickets : null,
+					};
+				}),
+			};
+		}),
 		trends: summary.trendData
 			? {
 					current: {

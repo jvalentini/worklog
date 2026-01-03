@@ -1,6 +1,7 @@
 import { format } from "date-fns";
 import type { Config, DateRange, SourceReader, WorkItem } from "../types.ts";
 import { expandPath } from "../utils/config.ts";
+import { extractTicketsFromCommit } from "../utils/tickets.ts";
 import {
 	extractBranchMergeInfo,
 	isMergeCommit,
@@ -174,6 +175,9 @@ export const gitReader: SourceReader = {
 						}
 					}
 
+					// Extract ticket references from commit
+					const tickets = extractTicketsFromCommit(commit.subject, commit.body);
+
 					items.push({
 						source: "git",
 						timestamp: commit.date,
@@ -183,6 +187,15 @@ export const gitReader: SourceReader = {
 							repo: repoPath,
 							hash: commit.hash,
 							author: commit.author,
+							...(tickets.length > 0 && {
+								tickets: tickets.map((t) => ({
+									id: t.id,
+									type: t.type,
+									project: t.project,
+									number: t.number,
+									url: t.url,
+								})),
+							}),
 						},
 					});
 				}
