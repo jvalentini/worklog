@@ -3,7 +3,7 @@ import type { DashboardTheme } from "./types.ts";
 export const chaosTheme: DashboardTheme = {
 	id: "chaos",
 	name: "CHAOS MODE",
-	description: "Cyberpunk neon with glitch effects",
+	description: "Cyberpunk neon with isometric depth",
 	colors: {
 		bgPrimary: "#0a0a0f",
 		bgSecondary: "#12121a",
@@ -38,178 +38,42 @@ export const chaosTheme: DashboardTheme = {
 		mono: "'JetBrains Mono', 'Consolas', monospace",
 	},
 	customCSS: `
+        /* ISOMETRIC DEPTH SYSTEM */
+        [data-theme="chaos"] html {
+            --iso-perspective: 1200px;
+            --iso-tilt: 8deg;
+            --depth-scale: 0.92;
+            --depth-fade: 0.85;
+        }
+
         [data-theme="chaos"] body {
-            background: radial-gradient(circle at 50% 50%, #1a0a1a 0%, #0a0a0f 70%, #000000 100%);
+            background: linear-gradient(180deg, #0a0a0f 0%, #0d0515 30%, #0a0a0f 100%);
             overflow-x: hidden;
+            perspective: var(--iso-perspective);
+            perspective-origin: 50% 0%;
         }
 
-        [data-theme="chaos"] .header-bar {
-            background: linear-gradient(90deg, rgba(255,0,255,0.1), rgba(0,255,255,0.1));
-            border-bottom: 2px solid;
-            border-image: linear-gradient(90deg, #ff00ff, #00ffff) 1;
-        }
-
-        [data-theme="chaos"] .logo-icon {
-            background: linear-gradient(135deg, #ff00ff, #00ffff);
-            box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
-            animation: logoGlow 2s ease-in-out infinite, chaosFloat 4s ease-in-out infinite;
-        }
-
-        /* RADIAL EXPLOSION LAYOUT */
-        [data-theme="chaos"] .metrics-grid {
-            position: relative;
-            display: block;
-            height: 500px;
-            margin: 80px auto;
-        }
-
-        [data-theme="chaos"] .metric-card {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            width: 180px;
-            border: 1px solid transparent;
-            background: linear-gradient(var(--bg-secondary), var(--bg-secondary)) padding-box,
-                        linear-gradient(135deg, #ff00ff40, #00ffff40) border-box;
-            box-shadow: 0 0 20px rgba(255, 0, 255, 0.1), inset 0 0 20px rgba(0, 255, 255, 0.05);
-            animation: chaosExplode 0.6s ease-out backwards, chaosRotate 8s linear infinite;
-        }
-
-        [data-theme="chaos"] .metric-card:nth-child(1) {
-            transform: translate(-50%, -50%) translate(0, -200px) rotate(3deg);
-            animation-delay: 0.1s, 0s;
-        }
-
-        [data-theme="chaos"] .metric-card:nth-child(2) {
-            transform: translate(-50%, -50%) translate(173px, -100px) rotate(-2deg);
-            animation-delay: 0.15s, 1s;
-        }
-
-        [data-theme="chaos"] .metric-card:nth-child(3) {
-            transform: translate(-50%, -50%) translate(173px, 100px) rotate(4deg);
-            animation-delay: 0.2s, 2s;
-        }
-
-        [data-theme="chaos"] .metric-card:nth-child(4) {
-            transform: translate(-50%, -50%) translate(0, 200px) rotate(-3deg);
-            animation-delay: 0.25s, 3s;
-        }
-
-        [data-theme="chaos"] .metric-card:nth-child(5) {
-            transform: translate(-50%, -50%) translate(-173px, 100px) rotate(2deg);
-            animation-delay: 0.3s, 4s;
-        }
-
-        [data-theme="chaos"] .metric-card:nth-child(6) {
-            transform: translate(-50%, -50%) translate(-173px, -100px) rotate(-4deg);
-            animation-delay: 0.35s, 5s;
-        }
-
-        [data-theme="chaos"] .metric-card:hover {
-            box-shadow: 0 0 40px rgba(255, 0, 255, 0.4), inset 0 0 30px rgba(0, 255, 255, 0.2);
-            transform: translate(-50%, -50%) translate(var(--chaos-x, 0), var(--chaos-y, 0)) rotate(var(--chaos-rotate, 0deg)) scale(1.1) !important;
-            transition: all 0.3s ease;
-            animation-play-state: paused;
-            z-index: 100;
-        }
-
-        [data-theme="chaos"] .metric-value {
-            text-shadow: 0 0 10px currentColor;
-        }
-
-        /* DIAGONAL ACTIVITY LOG */
-        [data-theme="chaos"] .main-grid {
-            display: block;
-            position: relative;
-        }
-
-        [data-theme="chaos"] .panel {
-            border: 1px solid transparent;
-            background: linear-gradient(var(--bg-secondary), var(--bg-secondary)) padding-box,
-                        linear-gradient(135deg, #00ffff40, #ff00ff40) border-box;
-            margin-bottom: 24px;
-            transform: rotate(-0.5deg);
-            animation: chaosPanel 0.5s ease-out backwards;
-        }
-
-        [data-theme="chaos"] .panel:nth-child(1) {
-            animation-delay: 0.4s;
-            transform: rotate(0.5deg);
-        }
-
-        [data-theme="chaos"] .panel:nth-child(2) {
-            animation-delay: 0.5s;
-            transform: rotate(-0.3deg);
-        }
-
-        [data-theme="chaos"] .panel:nth-child(3) {
-            animation-delay: 0.6s;
-            transform: rotate(0.2deg);
-        }
-
-        [data-theme="chaos"] .panel-header {
-            background: linear-gradient(90deg, rgba(0,255,255,0.1), rgba(255,0,255,0.1));
-        }
-
-        [data-theme="chaos"] .panel-title::before {
-            content: '>';
-            color: #00ffff;
-            text-shadow: 0 0 10px #00ffff;
-            animation: glitchText 3s linear infinite;
-        }
-
-        [data-theme="chaos"] .activity-item {
-            animation: slideInDiagonal 0.3s ease-out backwards;
-        }
-
-        [data-theme="chaos"] .activity-item:nth-child(1) { animation-delay: 0.7s; }
-        [data-theme="chaos"] .activity-item:nth-child(2) { animation-delay: 0.75s; }
-        [data-theme="chaos"] .activity-item:nth-child(3) { animation-delay: 0.8s; }
-        [data-theme="chaos"] .activity-item:nth-child(4) { animation-delay: 0.85s; }
-        [data-theme="chaos"] .activity-item:nth-child(5) { animation-delay: 0.9s; }
-
-        [data-theme="chaos"] .activity-item:hover {
-            background: linear-gradient(90deg, rgba(255,0,255,0.1), transparent);
-            transform: translateX(8px) rotate(0.5deg);
-        }
-
-        [data-theme="chaos"] .status-dot {
-            box-shadow: 0 0 10px currentColor;
-            animation: pulse 2s ease-in-out infinite, chaosGlitch 5s linear infinite;
-        }
-
-        [data-theme="chaos"] .filter-chip {
-            border: 1px solid #ff00ff40;
-            transform: rotate(-0.2deg);
-        }
-
-        [data-theme="chaos"] .filter-chip:hover {
-            border-color: #00ffff;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
-            transform: rotate(0deg) scale(1.05);
-        }
-
-        [data-theme="chaos"] .filter-chip.active {
-            background: rgba(0, 255, 255, 0.1);
-            border-color: #00ffff;
-            color: #00ffff;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
-        }
-
-        [data-theme="chaos"] .source-bar {
-            box-shadow: 0 0 10px currentColor;
-        }
-
-        [data-theme="chaos"] .footer-text {
-            text-shadow: 0 0 5px #ff00ff;
-        }
-
-        [data-theme="chaos"] ::selection {
-            background: #ff00ff;
-            color: #000;
-        }
-
+        /* Isometric ground plane grid */
         [data-theme="chaos"] body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: -50%;
+            right: -50%;
+            bottom: -100%;
+            background: 
+                linear-gradient(90deg, transparent 49.5%, rgba(255, 0, 255, 0.08) 50%, transparent 50.5%),
+                linear-gradient(0deg, transparent 49.5%, rgba(0, 255, 255, 0.05) 50%, transparent 50.5%);
+            background-size: 80px 80px;
+            transform: rotateX(75deg);
+            transform-origin: top center;
+            pointer-events: none;
+            z-index: -1;
+            animation: gridPulse 4s ease-in-out infinite;
+        }
+
+        /* Scanline overlay */
+        [data-theme="chaos"] body::after {
             content: '';
             position: fixed;
             top: 0;
@@ -220,119 +84,327 @@ export const chaosTheme: DashboardTheme = {
                 0deg,
                 transparent,
                 transparent 2px,
-                rgba(0, 255, 255, 0.03) 2px,
-                rgba(0, 255, 255, 0.03) 4px
+                rgba(0, 255, 255, 0.015) 2px,
+                rgba(0, 255, 255, 0.015) 4px
             );
             pointer-events: none;
             z-index: 9999;
-            animation: scanlineMove 10s linear infinite;
         }
 
-        /* CENTER BURST EFFECT */
-        [data-theme="chaos"] .container::before {
+        [data-theme="chaos"] .header-bar {
+            background: linear-gradient(90deg, rgba(255,0,255,0.15), rgba(0,0,0,0.8), rgba(0,255,255,0.15));
+            border-bottom: 2px solid;
+            border-image: linear-gradient(90deg, #ff00ff, transparent 20%, transparent 80%, #00ffff) 1;
+            backdrop-filter: blur(10px);
+        }
+
+        [data-theme="chaos"] .logo-icon {
+            background: linear-gradient(135deg, #ff00ff, #00ffff);
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+            animation: logoGlow 2s ease-in-out infinite;
+        }
+
+        /* ISOMETRIC CONTAINER */
+        [data-theme="chaos"] .container {
+            transform-style: preserve-3d;
+            transform: rotateX(var(--iso-tilt));
+            transform-origin: top center;
+        }
+
+        /* METRICS GRID - Isometric stepped layout */
+        [data-theme="chaos"] .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 40px 20px;
+            transform-style: preserve-3d;
+        }
+
+        [data-theme="chaos"] .metric-card {
+            border: 1px solid transparent;
+            background: linear-gradient(var(--bg-secondary), var(--bg-secondary)) padding-box,
+                        linear-gradient(180deg, #ff00ff60, #00ffff30) border-box;
+            box-shadow: 
+                0 4px 20px rgba(0, 0, 0, 0.5),
+                0 0 30px rgba(255, 0, 255, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            transform-style: preserve-3d;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            animation: cardEmerge 0.6s ease-out backwards;
+        }
+
+        /* Staggered depth - cards recede into distance */
+        [data-theme="chaos"] .metric-card:nth-child(1) {
+            transform: translateZ(60px);
+            animation-delay: 0.1s;
+        }
+        [data-theme="chaos"] .metric-card:nth-child(2) {
+            transform: translateZ(40px);
+            animation-delay: 0.15s;
+        }
+        [data-theme="chaos"] .metric-card:nth-child(3) {
+            transform: translateZ(20px);
+            animation-delay: 0.2s;
+        }
+        [data-theme="chaos"] .metric-card:nth-child(4) {
+            transform: translateZ(0px);
+            animation-delay: 0.25s;
+        }
+        [data-theme="chaos"] .metric-card:nth-child(5) {
+            transform: translateZ(-20px);
+            animation-delay: 0.3s;
+        }
+        [data-theme="chaos"] .metric-card:nth-child(6) {
+            transform: translateZ(-40px);
+            animation-delay: 0.35s;
+        }
+
+        [data-theme="chaos"] .metric-card:hover {
+            transform: translateZ(80px) scale(1.02) !important;
+            box-shadow: 
+                0 8px 40px rgba(0, 0, 0, 0.6),
+                0 0 50px rgba(255, 0, 255, 0.3),
+                0 0 80px rgba(0, 255, 255, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            z-index: 100;
+        }
+
+        [data-theme="chaos"] .metric-value {
+            text-shadow: 0 0 15px currentColor, 0 0 30px currentColor;
+        }
+
+        /* SECONDARY METRICS - Floating plane */
+        [data-theme="chaos"] .secondary-metrics {
+            border: 1px solid transparent;
+            background: linear-gradient(rgba(18, 18, 26, 0.95), rgba(18, 18, 26, 0.95)) padding-box,
+                        linear-gradient(90deg, #ff00ff40, #00ffff40) border-box;
+            transform: translateZ(-60px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            animation: planeSlide 0.7s ease-out 0.4s backwards;
+        }
+
+        /* FILTERS - Receding plane */
+        [data-theme="chaos"] .filters-section {
+            transform: translateZ(-80px);
+            animation: planeSlide 0.7s ease-out 0.5s backwards;
+        }
+
+        [data-theme="chaos"] .filter-chip {
+            border: 1px solid #ff00ff40;
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="chaos"] .filter-chip:hover {
+            border-color: #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+            transform: translateZ(10px);
+        }
+
+        [data-theme="chaos"] .filter-chip.active {
+            background: rgba(0, 255, 255, 0.15);
+            border-color: #00ffff;
+            color: #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+
+        /* MAIN GRID - Deep perspective panels */
+        [data-theme="chaos"] .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 380px;
+            gap: 24px;
+            transform-style: preserve-3d;
+        }
+
+        [data-theme="chaos"] .panel {
+            border: 1px solid transparent;
+            background: linear-gradient(var(--bg-secondary), var(--bg-secondary)) padding-box,
+                        linear-gradient(180deg, #00ffff40, #ff00ff20) border-box;
+            box-shadow: 
+                0 10px 40px rgba(0, 0, 0, 0.5),
+                0 0 20px rgba(0, 255, 255, 0.05);
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease, box-shadow 0.5s ease;
+            animation: panelEmerge 0.6s ease-out backwards;
+        }
+
+        /* Panels at increasing depth - receding into distance */
+        [data-theme="chaos"] .panel:nth-child(1) {
+            transform: translateZ(-100px);
+            animation-delay: 0.6s;
+        }
+
+        [data-theme="chaos"] .panel:nth-child(2) {
+            transform: translateZ(-140px);
+            animation-delay: 0.7s;
+        }
+
+        [data-theme="chaos"] .panel:nth-child(3) {
+            transform: translateZ(-180px);
+            animation-delay: 0.8s;
+        }
+
+        [data-theme="chaos"] .panel:hover {
+            transform: translateZ(-60px) !important;
+            box-shadow: 
+                0 15px 60px rgba(0, 0, 0, 0.6),
+                0 0 40px rgba(255, 0, 255, 0.2),
+                0 0 60px rgba(0, 255, 255, 0.1);
+        }
+
+        [data-theme="chaos"] .panel-header {
+            background: linear-gradient(90deg, rgba(0,255,255,0.1), rgba(255,0,255,0.05));
+            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        [data-theme="chaos"] .panel-title::before {
+            content: '▸';
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff;
+            margin-right: 4px;
+        }
+
+        /* ACTIVITY LOG items with depth cascade */
+        [data-theme="chaos"] .activity-item {
+            transition: all 0.3s ease;
+            animation: itemSlide 0.4s ease-out backwards;
+            border-left: 2px solid transparent;
+        }
+
+        [data-theme="chaos"] .activity-item:nth-child(1) { animation-delay: 0.9s; }
+        [data-theme="chaos"] .activity-item:nth-child(2) { animation-delay: 0.95s; }
+        [data-theme="chaos"] .activity-item:nth-child(3) { animation-delay: 1.0s; }
+        [data-theme="chaos"] .activity-item:nth-child(4) { animation-delay: 1.05s; }
+        [data-theme="chaos"] .activity-item:nth-child(5) { animation-delay: 1.1s; }
+        [data-theme="chaos"] .activity-item:nth-child(6) { animation-delay: 1.15s; }
+        [data-theme="chaos"] .activity-item:nth-child(7) { animation-delay: 1.2s; }
+        [data-theme="chaos"] .activity-item:nth-child(8) { animation-delay: 1.25s; }
+
+        [data-theme="chaos"] .activity-item:hover {
+            background: linear-gradient(90deg, rgba(255,0,255,0.1), transparent);
+            border-left-color: #ff00ff;
+            padding-left: 18px;
+        }
+
+        [data-theme="chaos"] .status-dot {
+            box-shadow: 0 0 10px currentColor;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        [data-theme="chaos"] .source-bar {
+            box-shadow: 0 0 15px currentColor;
+        }
+
+        /* FOOTER - Deepest plane */
+        [data-theme="chaos"] .footer {
+            transform: translateZ(-220px);
+            opacity: 0.8;
+        }
+
+        [data-theme="chaos"] .footer-text {
+            text-shadow: 0 0 8px #ff00ff;
+        }
+
+        [data-theme="chaos"] ::selection {
+            background: #ff00ff;
+            color: #000;
+        }
+
+        /* Horizon glow effect */
+        [data-theme="chaos"] .container::after {
             content: '';
             position: absolute;
-            top: 300px;
-            left: 50%;
-            width: 400px;
+            bottom: -200px;
+            left: -10%;
+            right: -10%;
             height: 400px;
-            transform: translate(-50%, -50%);
-            background: radial-gradient(circle, rgba(255,0,255,0.2) 0%, transparent 70%);
+            background: radial-gradient(ellipse 80% 50% at 50% 100%, rgba(255, 0, 255, 0.15), transparent 60%),
+                        radial-gradient(ellipse 60% 40% at 50% 100%, rgba(0, 255, 255, 0.1), transparent 50%);
             pointer-events: none;
-            animation: centerBurst 3s ease-in-out infinite;
+            transform: translateZ(-300px);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            [data-theme="chaos"] .metrics-grid { 
+                grid-template-columns: repeat(3, 1fr); 
+            }
+            [data-theme="chaos"] .main-grid { 
+                grid-template-columns: 1fr 1fr;
+            }
+            [data-theme="chaos"] .panel:nth-child(3) {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 768px) {
+            [data-theme="chaos"] html {
+                --iso-tilt: 5deg;
+                --iso-perspective: 800px;
+            }
+            [data-theme="chaos"] .metrics-grid { 
+                grid-template-columns: repeat(2, 1fr); 
+            }
+            [data-theme="chaos"] .main-grid { 
+                grid-template-columns: 1fr;
+            }
+            [data-theme="chaos"] .panel:nth-child(3) {
+                grid-column: span 1;
+            }
         }
     `,
 	animations: `
         @keyframes logoGlow {
             0%, 100% { box-shadow: 0 0 20px rgba(255, 0, 255, 0.5); }
-            50% { box-shadow: 0 0 30px rgba(0, 255, 255, 0.8); }
+            50% { box-shadow: 0 0 35px rgba(0, 255, 255, 0.7); }
         }
 
-        @keyframes chaosFloat {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-3px); }
-        }
-
-        @keyframes chaosExplode {
-            0% { 
-                transform: translate(-50%, -50%) scale(0.3) rotate(0deg);
-                opacity: 0;
-            }
-            100% { 
-                opacity: 1;
-            }
-        }
-
-        @keyframes chaosRotate {
+        @keyframes gridPulse {
             0%, 100% { 
-                filter: hue-rotate(0deg);
+                opacity: 1;
             }
             50% { 
-                filter: hue-rotate(10deg);
+                opacity: 0.7;
             }
         }
 
-        @keyframes chaosPanel {
+        @keyframes cardEmerge {
             0% {
-                transform: translateX(-100px) rotate(-5deg);
                 opacity: 0;
+                transform: translateZ(-200px) translateY(40px);
             }
             100% {
                 opacity: 1;
             }
         }
 
-        @keyframes slideInDiagonal {
+        @keyframes planeSlide {
             0% {
-                transform: translate(-30px, 10px);
                 opacity: 0;
+                transform: translateZ(-300px) translateY(30px);
             }
             100% {
-                transform: translate(0, 0);
                 opacity: 1;
             }
         }
 
-        @keyframes glitchText {
-            0%, 90%, 100% { 
-                transform: translate(0);
+        @keyframes panelEmerge {
+            0% {
+                opacity: 0;
+                transform: translateZ(-400px) translateY(50px);
             }
-            92% { 
-                transform: translate(-2px, 1px);
-            }
-            94% { 
-                transform: translate(2px, -1px);
-            }
-            96% { 
-                transform: translate(-1px, -1px);
+            100% {
+                opacity: 1;
             }
         }
 
-        @keyframes chaosGlitch {
-            0%, 98%, 100% {
-                transform: translate(0) scale(1);
+        @keyframes itemSlide {
+            0% {
+                opacity: 0;
+                transform: translateX(-20px);
             }
-            98.5% {
-                transform: translate(-1px, 1px) scale(1.1);
-            }
-            99.5% {
-                transform: translate(1px, -1px) scale(0.9);
-            }
-        }
-
-        @keyframes scanlineMove {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(20px); }
-        }
-
-        @keyframes centerBurst {
-            0%, 100% {
-                opacity: 0.3;
-                transform: translate(-50%, -50%) scale(1);
-            }
-            50% {
-                opacity: 0.6;
-                transform: translate(-50%, -50%) scale(1.1);
+            100% {
+                opacity: 1;
+                transform: translateX(0);
             }
         }
 

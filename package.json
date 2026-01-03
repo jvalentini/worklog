@@ -9,6 +9,7 @@
 	},
 	"scripts": {
 		"dev": "bun run bin/worklog.ts",
+		"dev:dashboard": "bun --watch bin/worklog.ts -D",
 		"build": "bun run build:all",
 		"build:all": "bun run build:darwin-arm64 && bun run build:darwin-x64 && bun run build:linux-x64 && bun run build:linux-arm64 && bun run build:windows-x64",
 		"build:darwin-arm64": "bun build bin/worklog.ts --compile --target=bun-darwin-arm64 --outfile=dist/worklog-darwin-arm64",
