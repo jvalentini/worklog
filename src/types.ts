@@ -56,7 +56,8 @@ export type SourceType =
 	| "vscode"
 	| "cursor"
 	| "terminal"
-	| "filesystem";
+	| "filesystem"
+	| "calendar";
 
 export interface CliOptions {
 	date?: string;
@@ -113,6 +114,14 @@ const PathsConfigSchema = z.object({
 	cursor: z.string().default(defaultCursorPath()),
 	terminal: z.string().default(defaultTerminalHistoryPath()),
 	filesystem: z.string().default("~/code"),
+	calendar: z.string().optional(),
+});
+
+const CalendarConfigSchema = z.object({
+	icalPath: z.string().optional(),
+	icalUrl: z.string().optional(),
+	excludePatterns: z.array(z.string()).default([]),
+	includePatterns: z.array(z.string()).default([]),
 });
 
 export const ConfigSchema = z.object({
@@ -147,6 +156,10 @@ export const ConfigSchema = z.object({
 		cursor: defaultCursorPath(),
 		terminal: defaultTerminalHistoryPath(),
 		filesystem: "~/code",
+	}),
+	calendar: CalendarConfigSchema.default({
+		excludePatterns: [],
+		includePatterns: [],
 	}),
 });
 

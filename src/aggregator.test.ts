@@ -27,6 +27,10 @@ function createConfig(gitRepos: string[]): Config {
 			terminal: "~/.bash_history",
 			filesystem: "~/code",
 		},
+		calendar: {
+			excludePatterns: [],
+			includePatterns: [],
+		},
 	};
 }
 

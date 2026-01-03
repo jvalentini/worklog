@@ -1,4 +1,5 @@
 import type { SourceReader, SourceType } from "../types.ts";
+import { calendarReader } from "./calendar.ts";
 import { claudeReader } from "./claude.ts";
 import { codexReader } from "./codex.ts";
 import { cursorReader } from "./cursor.ts";
@@ -21,6 +22,7 @@ const readers: Record<SourceType, SourceReader> = {
 	cursor: cursorReader,
 	terminal: terminalReader,
 	filesystem: filesystemReader,
+	calendar: calendarReader,
 };
 
 export function getReader(source: SourceType): SourceReader | undefined {
@@ -46,4 +48,5 @@ export const allSourceTypes: readonly SourceType[] = [
 	"cursor",
 	"terminal",
 	"filesystem",
+	"calendar",
 ] as const;

@@ -21,6 +21,10 @@ function createMockConfig(repos: string[]): Config {
 			provider: "openai",
 			model: "gpt-4o-mini",
 		},
+		calendar: {
+			excludePatterns: [],
+			includePatterns: [],
+		},
 	};
 }
 

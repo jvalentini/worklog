@@ -49,7 +49,7 @@ program
 	.option("-s, --slack", "Output in Slack format", false)
 	.option(
 		"--sources <sources>",
-		"Comma-separated list of sources (opencode,claude,codex,factory,git,github,vscode,cursor,terminal,filesystem)",
+		"Comma-separated list of sources (opencode,claude,codex,factory,git,github,vscode,cursor,terminal,filesystem,calendar)",
 		parseCommaSeparated,
 	)
 	.option("--repos <repos>", "Comma-separated list of git repo paths", parseCommaSeparated)
@@ -535,7 +535,7 @@ _worklog_completions() {
     -h --help
   )
 
-  local -a sources=(opencode claude codex factory git github vscode cursor terminal filesystem)
+  local -a sources=(opencode claude codex factory git github vscode cursor terminal filesystem calendar)
 
   _worklog_compgen_array() {
     local -a items=("$@")
