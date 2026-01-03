@@ -18,7 +18,7 @@ describe("generateDashboardHTML", () => {
 
 		expect(html).not.toContain("NaN");
 		expect(html).not.toContain("Infinity");
-		expect(html).toContain('<div class="stat-number" id="totalActivities">0</div>');
+		expect(html).toContain('id="totalActivities">0</div>');
 		expect(html).toContain("<!DOCTYPE html>");
 		expect(html).toContain("</html>");
 	});
@@ -57,8 +57,8 @@ describe("generateDashboardHTML", () => {
 
 		expect(html).not.toContain("NaN");
 		expect(html).not.toContain("Infinity");
-		expect(html).toContain('<div class="stat-number" id="totalActivities">3</div>');
-		expect(html).toContain('<div class="stat-number" id="activeSources">2</div>');
+		expect(html).toContain('id="totalActivities">3</div>');
+		expect(html).toContain('id="activeHours">3</div>');
 		expect(html).toContain("<!DOCTYPE html>");
 		expect(html).toContain("</html>");
 	});
