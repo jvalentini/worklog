@@ -4,6 +4,7 @@ import chalk from "chalk";
 import { program } from "commander";
 import pkg from "../package.json" with { type: "json" };
 import { aggregateByProject } from "../src/aggregator.ts";
+import { formatRecoveryReport, generateRecoveryReport } from "../src/context/recovery.ts";
 import { cronInstall, cronRun, cronStatus, cronUninstall, postToSlack } from "../src/cron.ts";
 import { formatProjectOutput, getFormat } from "../src/formatters/index.ts";
 import {
@@ -429,6 +430,46 @@ program
 
 				const format = opts.json ? "json" : (opts.format as "timeline" | "grouped" | "json");
 				const output = formatSearchResults(results, format);
+				console.log(output);
+			} catch (error) {
+				console.error(chalk.red("Error:"), error instanceof Error ? error.message : String(error));
+				process.exit(1);
+			}
+		},
+	);
+
+program
+	.command("recover")
+	.description("Recover context from previous sessions")
+	.option("-w, --week", "Include last week's context", false)
+	.option("--project <project>", "Filter by project name")
+	.option("-j, --json", "Output as JSON", false)
+	.option("-p, --plain", "Output as plain text", false)
+	.option("-v, --verbose", "Show detailed output", false)
+	.action(
+		async (opts: {
+			week?: boolean;
+			project?: string;
+			json?: boolean;
+			plain?: boolean;
+			verbose?: boolean;
+		}) => {
+			try {
+				const config = await loadConfig();
+				const readers = getReadersByNames(config.defaultSources);
+
+				if (opts.verbose) {
+					console.error(chalk.dim("Analyzing recent work..."));
+				}
+
+				const report = await generateRecoveryReport(config, readers, {
+					week: opts.week,
+					project: opts.project,
+					verbose: opts.verbose,
+				});
+
+				const format = opts.json ? "json" : opts.plain ? "plain" : "markdown";
+				const output = formatRecoveryReport(report, format, opts.verbose);
 				console.log(output);
 			} catch (error) {
 				console.error(chalk.red("Error:"), error instanceof Error ? error.message : String(error));
