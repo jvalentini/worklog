@@ -209,12 +209,10 @@ export const infraredTheme: DashboardTheme = {
 
         /* CENTERED MAIN PANELS */
         [data-theme="infrared"] .main-grid {
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 24px;
-            max-width: 900px;
-            margin: 320px auto 120px;
-            padding: 0 260px;
+            margin: 0 24px 120px 24px;
         }
 
         [data-theme="infrared"] .panel {
