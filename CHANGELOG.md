@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Features
 
+* Standup-grade weekly summaries with PR/branch lines (#21) — thanks @jvalentini
 * add Beads issue tracking, project attribution, and trends analysis (#20) — thanks @jvalentini
 * add project-centric summaries with LLM support (#16) — thanks @jvalentini
 * add bash completion support for worklog commands
