@@ -60,6 +60,7 @@ export interface CliOptions {
 	yesterday: boolean;
 	week: boolean;
 	month: boolean;
+	quarter: boolean;
 	last: boolean;
 	json: boolean;
 	plain: boolean;
