@@ -343,11 +343,6 @@ function groupCommitsByType(subjects: string[]): GroupedCommits[] {
 	return groups;
 }
 
-function isSingleDay(summary: ProjectWorkSummary): boolean {
-	const { start, end } = summary.dateRange;
-	return isSameDay(start, end);
-}
-
 type PrAction = "opened" | "merged";
 
 interface PrLine {
