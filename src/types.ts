@@ -74,6 +74,7 @@ export interface CliOptions {
 	trends: boolean;
 	dashboard: boolean;
 	theme?: string;
+	productivity: boolean;
 	verbose: boolean;
 	progress?: boolean;
 	repos?: string[];
