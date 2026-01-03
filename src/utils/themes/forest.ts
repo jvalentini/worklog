@@ -39,7 +39,7 @@ export const forestTheme: DashboardTheme = {
 	},
 	customCSS: `
         [data-theme="forest"] body {
-            background: #1A2F1A;
+            background: radial-gradient(ellipse at bottom, #1A2F1A 0%, #0F1F0F 100%);
             overflow-x: hidden;
         }
 
@@ -51,7 +51,56 @@ export const forestTheme: DashboardTheme = {
             bottom: 0;
             pointer-events: none;
             z-index: 0;
+            overflow: hidden;
+        }
+
+        [data-theme="forest"] .forest-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
             will-change: transform;
+        }
+
+        [data-theme="forest"] .mountain-range {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            fill: currentColor;
+        }
+
+        [data-theme="forest"] .mountain-range.far {
+            color: #0A1A0A;
+            opacity: 0.6;
+        }
+
+        [data-theme="forest"] .mountain-range.mid {
+            color: #152815;
+            opacity: 0.75;
+        }
+
+        [data-theme="forest"] .mountain-range.near {
+            color: #1F3A1F;
+            opacity: 0.85;
+        }
+
+        [data-theme="forest"] .tree-silhouette {
+            position: absolute;
+            fill: currentColor;
+        }
+
+        [data-theme="forest"] .tree-layer-1 {
+            color: #0D1D0D;
+            opacity: 0.5;
+        }
+
+        [data-theme="forest"] .tree-layer-2 {
+            color: #1A2F1A;
+            opacity: 0.7;
+        }
+
+        [data-theme="forest"] .tree-layer-3 {
+            color: #2D5A2D;
+            opacity: 0.85;
         }
 
         [data-theme="forest"] .forest-mist {
@@ -62,56 +111,18 @@ export const forestTheme: DashboardTheme = {
             height: 100vh;
             background: linear-gradient(
                 180deg,
-                rgba(26, 47, 26, 0.95) 0%,
-                rgba(26, 47, 26, 0.7) 20%,
-                rgba(26, 47, 26, 0.3) 50%,
-                transparent 80%
+                rgba(26, 47, 26, 0.85) 0%,
+                rgba(26, 47, 26, 0.5) 25%,
+                rgba(26, 47, 26, 0.2) 60%,
+                transparent 90%
             );
             opacity: var(--mist-opacity, 1);
-            transition: opacity 0.1s ease-out;
-        }
-
-        [data-theme="forest"] .forest-trees-left,
-        [data-theme="forest"] .forest-trees-right {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 120px;
-            pointer-events: none;
-        }
-
-        [data-theme="forest"] .forest-trees-left {
-            left: 0;
-        }
-
-        [data-theme="forest"] .forest-trees-right {
-            right: 0;
-        }
-
-        [data-theme="forest"] .forest-tree {
-            position: absolute;
-            width: 60px;
-            opacity: 0.15;
-            fill: #4ADE80;
-        }
-
-        [data-theme="forest"] .forest-tree.far {
-            opacity: 0.08;
-            transform: scale(0.7);
-        }
-
-        [data-theme="forest"] .forest-tree.mid {
-            opacity: 0.12;
-            transform: scale(0.85);
-        }
-
-        [data-theme="forest"] .forest-tree.near {
-            opacity: 0.18;
+            transition: opacity 0.2s ease-out;
         }
 
         [data-theme="forest"] .header-bar {
             background: rgba(26, 47, 26, 0.9);
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(12px);
             border-bottom: 1px solid #4ADE8030;
             position: sticky;
             top: 0;
@@ -375,10 +386,6 @@ export const forestTheme: DashboardTheme = {
             [data-theme="forest"] .metrics-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
-            [data-theme="forest"] .forest-trees-left,
-            [data-theme="forest"] .forest-trees-right {
-                width: 60px;
-            }
         }
     `,
 	animations: `
@@ -396,41 +403,57 @@ export const forestTheme: DashboardTheme = {
             const bg = document.createElement('div');
             bg.className = 'forest-parallax-bg';
             bg.innerHTML = \`
+                <div class="forest-layer" data-speed="0.15">
+                    <svg class="mountain-range far" viewBox="0 0 1400 300" preserveAspectRatio="none" style="height: 35vh;">
+                        <path d="M0,300 L0,180 Q150,120 280,160 L350,140 Q450,110 550,135 L620,125 Q720,95 820,120 L900,110 Q1000,85 1100,115 L1180,105 Q1280,75 1400,110 L1400,300 Z"/>
+                    </svg>
+                    <svg class="tree-silhouette tree-layer-1" style="bottom: 35vh; left: 8%; width: 80px; height: 120px;" viewBox="0 0 40 60">
+                        <polygon points="20,0 5,35 15,35 0,55 20,55 20,60 20,60 20,55 40,55 25,35 35,35"/>
+                    </svg>
+                    <svg class="tree-silhouette tree-layer-1" style="bottom: 35vh; right: 12%; width: 70px; height: 110px;" viewBox="0 0 40 60">
+                        <polygon points="20,5 10,30 15,30 5,50 20,50 20,60 20,60 20,50 35,50 25,30 30,30"/>
+                    </svg>
+                </div>
+                
+                <div class="forest-layer" data-speed="0.3">
+                    <svg class="mountain-range mid" viewBox="0 0 1400 280" preserveAspectRatio="none" style="height: 40vh;">
+                        <path d="M0,280 L0,150 Q100,100 200,130 L280,110 Q380,75 480,105 L560,95 Q660,60 760,90 L840,80 Q940,50 1040,85 L1120,75 Q1220,45 1320,80 L1400,70 L1400,280 Z"/>
+                    </svg>
+                    <svg class="tree-silhouette tree-layer-2" style="bottom: 40vh; left: 15%; width: 100px; height: 150px;" viewBox="0 0 40 60">
+                        <polygon points="20,0 8,28 14,28 2,48 18,48 18,60 22,60 22,48 38,48 26,28 32,28"/>
+                    </svg>
+                    <svg class="tree-silhouette tree-layer-2" style="bottom: 40vh; left: 25%; width: 90px; height: 140px;" viewBox="0 0 40 60">
+                        <polygon points="20,3 10,25 16,25 6,45 18,45 18,60 22,60 22,45 34,45 24,25 30,25"/>
+                    </svg>
+                    <svg class="tree-silhouette tree-layer-2" style="bottom: 40vh; right: 20%; width: 110px; height: 160px;" viewBox="0 0 40 60">
+                        <polygon points="20,0 6,32 13,32 0,52 18,52 18,60 22,60 22,52 40,52 27,32 34,32"/>
+                    </svg>
+                </div>
+
+                <div class="forest-layer" data-speed="0.5">
+                    <svg class="mountain-range near" viewBox="0 0 1400 260" preserveAspectRatio="none" style="height: 45vh;">
+                        <path d="M0,260 L0,120 Q80,70 160,100 L230,85 Q320,50 410,80 L480,70 Q570,35 660,65 L730,55 Q820,25 910,60 L980,50 Q1070,20 1160,55 L1230,45 Q1320,15 1400,50 L1400,260 Z"/>
+                    </svg>
+                    <svg class="tree-silhouette tree-layer-3" style="bottom: 45vh; left: 5%; width: 130px; height: 180px;" viewBox="0 0 40 60">
+                        <polygon points="20,0 5,35 12,35 0,55 18,55 18,60 22,60 22,55 40,55 28,35 35,35"/>
+                    </svg>
+                    <svg class="tree-silhouette tree-layer-3" style="bottom: 45vh; left: 35%; width: 120px; height: 170px;" viewBox="0 0 40 60">
+                        <polygon points="20,2 7,30 13,30 3,50 18,50 18,60 22,60 22,50 37,50 27,30 33,30"/>
+                    </svg>
+                    <svg class="tree-silhouette tree-layer-3" style="bottom: 45vh; right: 8%; width: 140px; height: 190px;" viewBox="0 0 40 60">
+                        <polygon points="20,0 4,38 11,38 0,58 18,58 18,60 22,60 22,58 40,58 29,38 36,38"/>
+                    </svg>
+                    <svg class="tree-silhouette tree-layer-3" style="bottom: 45vh; right: 30%; width: 115px; height: 165px;" viewBox="0 0 40 60">
+                        <polygon points="20,1 9,28 15,28 5,48 18,48 18,60 22,60 22,48 35,48 25,28 31,28"/>
+                    </svg>
+                </div>
+
                 <div class="forest-mist"></div>
-                <div class="forest-trees-left">
-                    <svg class="forest-tree far" style="top: 5%; left: 20px" viewBox="0 0 60 120">
-                        <path d="M30 0 L5 50 L15 50 L0 90 L20 90 L20 120 L40 120 L40 90 L60 90 L45 50 L55 50 Z"/>
-                    </svg>
-                    <svg class="forest-tree mid" style="top: 25%; left: 40px" viewBox="0 0 60 120">
-                        <path d="M30 0 L5 50 L15 50 L0 90 L20 90 L20 120 L40 120 L40 90 L60 90 L45 50 L55 50 Z"/>
-                    </svg>
-                    <svg class="forest-tree near" style="top: 50%; left: 15px" viewBox="0 0 60 120">
-                        <path d="M30 0 L5 50 L15 50 L0 90 L20 90 L20 120 L40 120 L40 90 L60 90 L45 50 L55 50 Z"/>
-                    </svg>
-                    <svg class="forest-tree far" style="top: 75%; left: 50px" viewBox="0 0 60 120">
-                        <path d="M30 0 L5 50 L15 50 L0 90 L20 90 L20 120 L40 120 L40 90 L60 90 L45 50 L55 50 Z"/>
-                    </svg>
-                </div>
-                <div class="forest-trees-right">
-                    <svg class="forest-tree mid" style="top: 10%; right: 30px" viewBox="0 0 60 120">
-                        <path d="M30 0 L5 50 L15 50 L0 90 L20 90 L20 120 L40 120 L40 90 L60 90 L45 50 L55 50 Z"/>
-                    </svg>
-                    <svg class="forest-tree near" style="top: 35%; right: 10px" viewBox="0 0 60 120">
-                        <path d="M30 0 L5 50 L15 50 L0 90 L20 90 L20 120 L40 120 L40 90 L60 90 L45 50 L55 50 Z"/>
-                    </svg>
-                    <svg class="forest-tree far" style="top: 60%; right: 45px" viewBox="0 0 60 120">
-                        <path d="M30 0 L5 50 L15 50 L0 90 L20 90 L20 120 L40 120 L40 90 L60 90 L45 50 L55 50 Z"/>
-                    </svg>
-                    <svg class="forest-tree mid" style="top: 85%; right: 20px" viewBox="0 0 60 120">
-                        <path d="M30 0 L5 50 L15 50 L0 90 L20 90 L20 120 L40 120 L40 90 L60 90 L45 50 L55 50 Z"/>
-                    </svg>
-                </div>
             \`;
             document.body.insertBefore(bg, document.body.firstChild);
 
             const mist = bg.querySelector('.forest-mist');
-            const treesLeft = bg.querySelector('.forest-trees-left');
-            const treesRight = bg.querySelector('.forest-trees-right');
+            const layers = bg.querySelectorAll('[data-speed]');
 
             const depthElements = document.querySelectorAll(
                 '.metric-card, .secondary-metrics, .filters-section, .panel'
@@ -460,9 +483,11 @@ export const forestTheme: DashboardTheme = {
                         const mistOpacity = Math.max(0, 1 - scrollProgress * 2.5);
                         mist.style.setProperty('--mist-opacity', mistOpacity);
 
-                        const parallaxOffset = scrollY * 0.3;
-                        treesLeft.style.transform = 'translateY(' + (-parallaxOffset) + 'px)';
-                        treesRight.style.transform = 'translateY(' + (-parallaxOffset) + 'px)';
+                        layers.forEach(layer => {
+                            const speed = parseFloat(layer.getAttribute('data-speed')) || 0.3;
+                            const offset = scrollY * speed;
+                            layer.style.transform = 'translateY(' + (-offset) + 'px)';
+                        });
 
                         ticking = false;
                     });
