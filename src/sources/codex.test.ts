@@ -507,6 +507,10 @@ describe("createCodexReader", () => {
 				terminal: "",
 				filesystem: "",
 			},
+			calendar: {
+				excludePatterns: [],
+				includePatterns: [],
+			},
 		};
 
 		const result = await reader.read(dateRange, config);
