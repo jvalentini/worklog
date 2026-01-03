@@ -21,6 +21,10 @@ function createMockConfig(repos: string[], gitIdentityEmails: string[] = []): Co
 			provider: "openai",
 			model: "gpt-4o-mini",
 		},
+		calendar: {
+			excludePatterns: [],
+			includePatterns: [],
+		},
 	};
 }
 

@@ -1,4 +1,4 @@
-import { format, startOfWeek } from "date-fns";
+import { format, isSameDay, startOfWeek } from "date-fns";
 import { getCommitSubjects, getGitHubDescriptions, getSessionDescriptions } from "../aggregator.ts";
 import type { ContextCluster } from "../context/analyzer.ts";
 import type { SmartSummaryResult } from "../llm.ts";
@@ -341,6 +341,11 @@ function groupCommitsByType(subjects: string[]): GroupedCommits[] {
 	}
 
 	return groups;
+}
+
+function isSingleDay(summary: ProjectWorkSummary): boolean {
+	const { start, end } = summary.dateRange;
+	return isSameDay(start, end);
 }
 
 type PrAction = "opened" | "merged";
