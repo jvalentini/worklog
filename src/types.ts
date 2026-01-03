@@ -57,7 +57,8 @@ export type SourceType =
 	| "cursor"
 	| "terminal"
 	| "filesystem"
-	| "calendar";
+	| "calendar"
+	| "slack";
 
 export interface CliOptions {
 	date?: string;
@@ -115,6 +116,7 @@ const PathsConfigSchema = z.object({
 	terminal: z.string().default(defaultTerminalHistoryPath()),
 	filesystem: z.string().default("~/code"),
 	calendar: z.string().optional(),
+	slack: z.string().default("~/Downloads/slack-export"),
 });
 
 const CalendarConfigSchema = z.object({
@@ -156,6 +158,7 @@ export const ConfigSchema = z.object({
 		cursor: defaultCursorPath(),
 		terminal: defaultTerminalHistoryPath(),
 		filesystem: "~/code",
+		slack: "~/Downloads/slack-export",
 	}),
 	calendar: CalendarConfigSchema.default({
 		excludePatterns: [],

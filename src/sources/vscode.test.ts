@@ -535,6 +535,7 @@ describe("createVSCodeReader", () => {
 				cursor: "",
 				terminal: "",
 				filesystem: "",
+				slack: "",
 			},
 			calendar: {
 				excludePatterns: [],

@@ -437,6 +437,7 @@ describe("createCursorReader", () => {
 				cursor: "/test",
 				terminal: "",
 				filesystem: "",
+				slack: "",
 			},
 			calendar: {
 				excludePatterns: [],

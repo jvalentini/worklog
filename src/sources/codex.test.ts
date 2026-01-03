@@ -506,6 +506,7 @@ describe("createCodexReader", () => {
 				cursor: "",
 				terminal: "",
 				filesystem: "",
+				slack: "",
 			},
 			calendar: {
 				excludePatterns: [],

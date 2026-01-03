@@ -26,6 +26,7 @@ function createConfig(gitRepos: string[]): Config {
 			cursor: "~/.config/Cursor",
 			terminal: "~/.bash_history",
 			filesystem: "~/code",
+			slack: "~/Downloads/slack-export",
 		},
 		calendar: {
 			excludePatterns: [],
