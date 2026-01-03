@@ -141,7 +141,7 @@ function computeTermFrequency(tokens: string[]): TermFrequency {
 	}
 	const maxFreq = Math.max(...Object.values(tf), 1);
 	for (const term in tf) {
-		tf[term] = tf[term]! / maxFreq;
+		tf[term] = (tf[term] ?? 0) / maxFreq;
 	}
 	return tf;
 }
@@ -187,7 +187,7 @@ function cosineSimilarity(a: DocumentVector, b: DocumentVector): number {
 	let dotProduct = 0;
 	for (const [term, weight] of Object.entries(a.terms)) {
 		if (term in b.terms) {
-			dotProduct += weight * b.terms[term]!;
+			dotProduct += weight * (b.terms[term] ?? 0);
 		}
 	}
 
@@ -212,13 +212,19 @@ export function computeSimilarityMatrix(items: WorkItem[]): number[][] {
 	);
 
 	for (let i = 0; i < items.length; i++) {
+		const row = matrix[i];
+		const vecI = vectors[i];
+		if (!row || !vecI) continue;
 		for (let j = 0; j < items.length; j++) {
 			if (i === j) {
-				matrix[i]![j] = 1;
+				row[j] = 1;
 			} else if (j < i) {
-				matrix[i]![j] = matrix[j]?.[i] ?? 0;
+				row[j] = matrix[j]?.[i] ?? 0;
 			} else {
-				matrix[i]![j] = cosineSimilarity(vectors[i]!, vectors[j]!);
+				const vecJ = vectors[j];
+				if (vecJ) {
+					row[j] = cosineSimilarity(vecI, vecJ);
+				}
 			}
 		}
 	}
@@ -228,8 +234,9 @@ export function computeSimilarityMatrix(items: WorkItem[]): number[][] {
 
 export function clusterItems(items: WorkItem[], threshold = 0.3): ContextCluster[] {
 	if (items.length === 0) return [];
-	if (items.length === 1) {
-		return [createCluster([items[0]!], 0)];
+	const firstItem = items[0];
+	if (items.length === 1 && firstItem) {
+		return [createCluster([firstItem], 0)];
 	}
 
 	const matrix = computeSimilarityMatrix(items);
@@ -255,7 +262,9 @@ export function clusterItems(items: WorkItem[], threshold = 0.3): ContextCluster
 			}
 		}
 
-		const clusterItems = clusterIndices.map((idx) => items[idx]!);
+		const clusterItems = clusterIndices
+			.map((idx) => items[idx])
+			.filter((item): item is WorkItem => item !== undefined);
 		clusters.push(createCluster(clusterItems, clusters.length));
 	}
 
@@ -309,8 +318,12 @@ function generateThemeLabel(keywords: string[], items: WorkItem[]): string {
 		return sources.length === 1 ? `${sources[0]} activity` : "Mixed activity";
 	}
 
-	const primary = keywords[0]!;
+	const primary = keywords[0];
 	const secondary = keywords[1];
+	if (!primary) {
+		const sources = [...new Set(items.map((i) => i.source))];
+		return sources.length === 1 ? `${sources[0]} activity` : "Mixed activity";
+	}
 
 	if (secondary) {
 		return `${capitalize(primary)} & ${capitalize(secondary)}`;
@@ -330,8 +343,9 @@ export function findCrossClusterConnections(
 
 	for (let i = 0; i < clusters.length; i++) {
 		for (let j = i + 1; j < clusters.length; j++) {
-			const a = clusters[i]!;
-			const b = clusters[j]!;
+			const a = clusters[i];
+			const b = clusters[j];
+			if (!a || !b) continue;
 
 			const sharedKeywords = a.keywords.filter((k) => b.keywords.includes(k));
 

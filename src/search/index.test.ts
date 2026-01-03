@@ -161,7 +161,7 @@ describe("search", () => {
 		const results = await search({ query: "authentication" });
 
 		expect(results).toHaveLength(2);
-		expect(results[0]!.score).toBeGreaterThanOrEqual(results[1]!.score);
+		expect(results[0]?.score).toBeGreaterThanOrEqual(results[1]?.score ?? 0);
 	});
 });
 

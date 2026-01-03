@@ -332,9 +332,9 @@ describe("parseWorkspaceFile", () => {
 
 		const result = await parseWorkspaceFile("/storage/ws1/workspace.json", dateRange, adapter);
 		expect(result).toHaveLength(1);
-		expect(result[0]!.source).toBe("cursor");
-		expect(result[0]!.title).toContain("project");
-		expect(result[0]!.metadata?.repo).toBe("/home/user/project");
+		expect(result[0]?.source).toBe("cursor");
+		expect(result[0]?.title).toContain("project");
+		expect(result[0]?.metadata?.repo).toBe("/home/user/project");
 	});
 
 	test("uses state.vscdb mtime if available", async () => {
@@ -351,7 +351,7 @@ describe("parseWorkspaceFile", () => {
 
 		const result = await parseWorkspaceFile("/storage/ws1/workspace.json", dateRange, adapter);
 		expect(result).toHaveLength(1);
-		expect(result[0]!.timestamp.getTime()).toBe(stateTime.getTime());
+		expect(result[0]?.timestamp.getTime()).toBe(stateTime.getTime());
 	});
 
 	test("includes workspace ID in description", async () => {
@@ -368,7 +368,7 @@ describe("parseWorkspaceFile", () => {
 		const adapter = new MockCursorAdapter(new Map(), files);
 
 		const result = await parseWorkspaceFile("/storage/ws1/workspace.json", dateRange, adapter);
-		expect(result[0]!.description).toContain("abc123");
+		expect(result[0]?.description).toContain("abc123");
 	});
 
 	test("returns empty when file doesn't exist", async () => {
@@ -447,6 +447,6 @@ describe("createCursorReader", () => {
 
 		const result = await reader.read(dateRange, config);
 		expect(result.length).toBeGreaterThanOrEqual(1);
-		expect(result[0]!.source).toBe("cursor");
+		expect(result[0]?.source).toBe("cursor");
 	});
 });

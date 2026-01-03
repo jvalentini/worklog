@@ -349,10 +349,10 @@ describe("parseSessionDir", () => {
 
 		const result = await parseSessionDir("/session/2026/01/02", gitRepos, adapter);
 		expect(result).toHaveLength(1);
-		expect(result[0]!.source).toBe("codex");
-		expect(result[0]!.title).toBe("Codex: Help me fix the bug");
-		expect(result[0]!.metadata?.promptCount).toBe(2);
-		expect(result[0]!.description).toBe("2 prompts");
+		expect(result[0]?.source).toBe("codex");
+		expect(result[0]?.title).toBe("Codex: Help me fix the bug");
+		expect(result[0]?.metadata?.promptCount).toBe(2);
+		expect(result[0]?.description).toBe("2 prompts");
 	});
 
 	test("uses first message timestamp as session start", async () => {
@@ -368,7 +368,7 @@ describe("parseSessionDir", () => {
 		const adapter = new MockCodexAdapter(dirs, files);
 
 		const result = await parseSessionDir("/session", gitRepos, adapter);
-		expect(result[0]!.timestamp.toISOString()).toBe("2026-01-02T09:00:00.000Z");
+		expect(result[0]?.timestamp.toISOString()).toBe("2026-01-02T09:00:00.000Z");
 	});
 
 	test("extracts repo from message content", async () => {
@@ -387,7 +387,7 @@ describe("parseSessionDir", () => {
 		const adapter = new MockCodexAdapter(dirs, files);
 
 		const result = await parseSessionDir("/session", gitRepos, adapter);
-		expect(result[0]!.metadata?.repo).toBe("/home/user/project");
+		expect(result[0]?.metadata?.repo).toBe("/home/user/project");
 	});
 
 	test("ignores non-JSONL files", async () => {
@@ -442,7 +442,7 @@ describe("parseSessionDir", () => {
 
 		const result = await parseSessionDir("/session", gitRepos, adapter);
 		expect(result).toHaveLength(1);
-		expect(result[0]!.metadata?.promptCount).toBe(2);
+		expect(result[0]?.metadata?.promptCount).toBe(2);
 	});
 
 	test("returns empty when directory doesn't exist", async () => {
@@ -463,8 +463,8 @@ describe("parseSessionDir", () => {
 		const adapter = new MockCodexAdapter(dirs, files);
 
 		const result = await parseSessionDir("/session", gitRepos, adapter);
-		expect(result[0]!.description).toBeUndefined();
-		expect(result[0]!.metadata?.promptCount).toBe(1);
+		expect(result[0]?.description).toBeUndefined();
+		expect(result[0]?.metadata?.promptCount).toBe(1);
 	});
 });
 
@@ -516,7 +516,7 @@ describe("createCodexReader", () => {
 
 		const result = await reader.read(dateRange, config);
 		expect(result).toHaveLength(1);
-		expect(result[0]!.source).toBe("codex");
-		expect(result[0]!.title).toBe("Codex: Hello");
+		expect(result[0]?.source).toBe("codex");
+		expect(result[0]?.title).toBe("Codex: Hello");
 	});
 });
