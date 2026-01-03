@@ -11,6 +11,38 @@ interface OpenCodeMessage {
 	timestamp?: string;
 }
 
+export interface OpenCodeSession {
+	id: string;
+	title: string;
+	time: { created: number; updated: number };
+	projectID: string;
+	directory: string;
+}
+
+export interface OpenCodeAdapter {
+	readdir(path: string): Promise<string[]>;
+	stat(path: string): Promise<{ isDirectory: () => boolean; isFile: () => boolean }>;
+	readFile(path: string): Promise<string>;
+}
+
+class BunOpenCodeAdapter implements OpenCodeAdapter {
+	async readdir(path: string): Promise<string[]> {
+		return readdir(path);
+	}
+
+	async stat(path: string): Promise<{ isDirectory: () => boolean; isFile: () => boolean }> {
+		const s = await stat(path);
+		return {
+			isDirectory: () => s.isDirectory(),
+			isFile: () => s.isFile(),
+		};
+	}
+
+	async readFile(path: string): Promise<string> {
+		return Bun.file(path).text();
+	}
+}
+
 export function extractFilePaths(content: string): string[] {
 	const paths: string[] = [];
 	const lines = content.split("\n");
@@ -31,16 +63,19 @@ export function extractFilePaths(content: string): string[] {
 	return paths;
 }
 
-async function findJsonFilesRecursively(dirPath: string): Promise<string[]> {
+export async function findJsonFilesRecursively(
+	dirPath: string,
+	adapter: OpenCodeAdapter = new BunOpenCodeAdapter(),
+): Promise<string[]> {
 	const files: string[] = [];
 
 	async function scanDir(currentPath: string): Promise<void> {
 		try {
-			const entries = await readdir(currentPath);
+			const entries = await adapter.readdir(currentPath);
 
 			for (const entry of entries) {
 				const fullPath = join(currentPath, entry);
-				const stats = await stat(fullPath);
+				const stats = await adapter.stat(fullPath);
 
 				if (stats.isDirectory()) {
 					await scanDir(fullPath);
@@ -90,23 +125,17 @@ export function findRepoFromMessages(
 	return undefined;
 }
 
-async function parseSessionFile(
+export async function parseSessionFile(
 	filePath: string,
 	dateRange: DateRange,
 	gitRepos: string[],
+	adapter: OpenCodeAdapter = new BunOpenCodeAdapter(),
 ): Promise<WorkItem[]> {
 	const items: WorkItem[] = [];
 
 	try {
-		const file = Bun.file(filePath);
-		const content = await file.text();
-		const session = JSON.parse(content) as {
-			id: string;
-			title: string;
-			time: { created: number; updated: number };
-			projectID: string;
-			directory: string;
-		};
+		const content = await adapter.readFile(filePath);
+		const session = JSON.parse(content) as OpenCodeSession;
 
 		const sessionStart = new Date(session.time.created);
 
@@ -144,23 +173,34 @@ async function parseSessionFile(
 	return items;
 }
 
-export const opencodeReader: SourceReader = {
-	name: "opencode",
-	async read(dateRange: DateRange, config: Config): Promise<WorkItem[]> {
-		const basePath = expandPath(config.paths.opencode);
-		const items: WorkItem[] = [];
+export function createOpenCodeReader(
+	adapter: OpenCodeAdapter = new BunOpenCodeAdapter(),
+): SourceReader {
+	return {
+		name: "opencode",
+		async read(dateRange: DateRange, config: Config): Promise<WorkItem[]> {
+			const basePath = expandPath(config.paths.opencode);
+			const items: WorkItem[] = [];
 
-		try {
-			const jsonFiles = await findJsonFilesRecursively(basePath);
+			try {
+				const jsonFiles = await findJsonFilesRecursively(basePath, adapter);
 
-			for (const filePath of jsonFiles) {
-				const sessionItems = await parseSessionFile(filePath, dateRange, config.gitRepos);
-				items.push(...sessionItems);
+				for (const filePath of jsonFiles) {
+					const sessionItems = await parseSessionFile(
+						filePath,
+						dateRange,
+						config.gitRepos,
+						adapter,
+					);
+					items.push(...sessionItems);
+				}
+			} catch {
+				return [];
 			}
-		} catch {
-			return [];
-		}
 
-		return items.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-	},
-};
+			return items.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+		},
+	};
+}
+
+export const opencodeReader: SourceReader = createOpenCodeReader();
