@@ -1,4 +1,4 @@
-import { format, isSameDay, startOfWeek } from "date-fns";
+import { format, startOfWeek } from "date-fns";
 import { getCommitSubjects, getGitHubDescriptions, getSessionDescriptions } from "../aggregator.ts";
 import type { ContextCluster } from "../context/analyzer.ts";
 import type { SmartSummaryResult } from "../llm.ts";
