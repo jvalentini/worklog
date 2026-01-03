@@ -18,6 +18,17 @@ import {
 } from "../utils/dates.ts";
 import { formatTrendSummary } from "../utils/trends.ts";
 
+/** Check if a summary covers only a single day */
+function isSingleDay(summary: ProjectWorkSummary): boolean {
+	const start = summary.dateRange.start;
+	const end = summary.dateRange.end;
+	return (
+		start.getFullYear() === end.getFullYear() &&
+		start.getMonth() === end.getMonth() &&
+		start.getDate() === end.getDate()
+	);
+}
+
 function formatDailyProject(
 	project: ProjectActivity,
 	daily: DailyProjectActivity,
