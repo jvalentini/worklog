@@ -1,7 +1,44 @@
 import { describe, expect, test } from "bun:test";
-import type { WorkItem } from "../types.ts";
+import type { DateRange, WorkItem } from "../types.ts";
 import { attributeWorkItem, MISC_PROJECT } from "../utils/attribution.ts";
-import { extractFilePaths, findRepoFromMessages } from "./opencode.ts";
+import {
+	createOpenCodeReader,
+	extractFilePaths,
+	findJsonFilesRecursively,
+	findRepoFromMessages,
+	type OpenCodeAdapter,
+	type OpenCodeSession,
+	parseSessionFile,
+} from "./opencode.ts";
+
+class MockOpenCodeAdapter implements OpenCodeAdapter {
+	constructor(
+		private dirs: Map<string, string[]> = new Map(),
+		private fileStats: Map<string, { isDir: boolean }> = new Map(),
+		private files: Map<string, string> = new Map(),
+	) {}
+
+	async readdir(path: string): Promise<string[]> {
+		const entries = this.dirs.get(path);
+		if (!entries) throw new Error(`Directory not found: ${path}`);
+		return entries;
+	}
+
+	async stat(path: string): Promise<{ isDirectory: () => boolean; isFile: () => boolean }> {
+		const s = this.fileStats.get(path);
+		if (!s) throw new Error(`File not found: ${path}`);
+		return {
+			isDirectory: () => s.isDir,
+			isFile: () => !s.isDir,
+		};
+	}
+
+	async readFile(path: string): Promise<string> {
+		const content = this.files.get(path);
+		if (content === undefined) throw new Error(`File not found: ${path}`);
+		return content;
+	}
+}
 
 describe("extractFilePaths", () => {
 	test("extracts absolute paths", () => {
@@ -252,5 +289,216 @@ describe("OpenCode attribution integration", () => {
 		};
 
 		expect(attributeWorkItem(item, gitRepos)).toBe(MISC_PROJECT);
+	});
+});
+
+describe("findJsonFilesRecursively", () => {
+	test("finds json files in directory", async () => {
+		const dirs = new Map([
+			["/base", ["file1.json", "file2.txt", "subdir"]],
+			["/base/subdir", ["file3.json"]],
+		]);
+		const fileStats = new Map([
+			["/base/file1.json", { isDir: false }],
+			["/base/file2.txt", { isDir: false }],
+			["/base/subdir", { isDir: true }],
+			["/base/subdir/file3.json", { isDir: false }],
+		]);
+		const adapter = new MockOpenCodeAdapter(dirs, fileStats);
+
+		const result = await findJsonFilesRecursively("/base", adapter);
+		expect(result).toContain("/base/file1.json");
+		expect(result).toContain("/base/subdir/file3.json");
+		expect(result).not.toContain("/base/file2.txt");
+	});
+
+	test("returns empty array for nonexistent directory", async () => {
+		const adapter = new MockOpenCodeAdapter();
+		const result = await findJsonFilesRecursively("/nonexistent", adapter);
+		expect(result).toEqual([]);
+	});
+
+	test("handles empty directory", async () => {
+		const dirs = new Map([["/empty", []]]);
+		const adapter = new MockOpenCodeAdapter(dirs);
+
+		const result = await findJsonFilesRecursively("/empty", adapter);
+		expect(result).toEqual([]);
+	});
+
+	test("skips unreadable subdirectories", async () => {
+		const dirs = new Map([["/base", ["file.json", "baddir"]]]);
+		const fileStats = new Map([
+			["/base/file.json", { isDir: false }],
+			["/base/baddir", { isDir: true }],
+			// /base/baddir entries will throw
+		]);
+		const adapter = new MockOpenCodeAdapter(dirs, fileStats);
+
+		const result = await findJsonFilesRecursively("/base", adapter);
+		expect(result).toContain("/base/file.json");
+	});
+});
+
+describe("parseSessionFile", () => {
+	const dateRange: DateRange = {
+		start: new Date("2026-01-01"),
+		end: new Date("2026-01-03"),
+	};
+	const gitRepos = ["/home/justin/code/worklog"];
+
+	test("parses valid session file", async () => {
+		const session: OpenCodeSession = {
+			id: "session-123",
+			title: "Fix the parser bug",
+			time: {
+				created: new Date("2026-01-02").getTime(),
+				updated: new Date("2026-01-02").getTime(),
+			},
+			projectID: "project-1",
+			directory: "/home/justin/code/worklog",
+		};
+		const files = new Map([["/sessions/test.json", JSON.stringify(session)]]);
+		const adapter = new MockOpenCodeAdapter(new Map(), new Map(), files);
+
+		const result = await parseSessionFile("/sessions/test.json", dateRange, gitRepos, adapter);
+		expect(result).toHaveLength(1);
+		expect(result[0]!.source).toBe("opencode");
+		expect(result[0]!.title).toContain("Fix the parser bug");
+		expect(result[0]!.metadata?.repo).toBe("/home/justin/code/worklog");
+	});
+
+	test("returns empty for file outside date range", async () => {
+		const session: OpenCodeSession = {
+			id: "session-456",
+			title: "Old session",
+			time: {
+				created: new Date("2025-12-01").getTime(),
+				updated: new Date("2025-12-01").getTime(),
+			},
+			projectID: "project-1",
+			directory: "/home/justin/code/worklog",
+		};
+		const files = new Map([["/sessions/old.json", JSON.stringify(session)]]);
+		const adapter = new MockOpenCodeAdapter(new Map(), new Map(), files);
+
+		const result = await parseSessionFile("/sessions/old.json", dateRange, gitRepos, adapter);
+		expect(result).toEqual([]);
+	});
+
+	test("returns empty for nonexistent file", async () => {
+		const adapter = new MockOpenCodeAdapter();
+		const result = await parseSessionFile("/nonexistent.json", dateRange, gitRepos, adapter);
+		expect(result).toEqual([]);
+	});
+
+	test("returns empty for invalid JSON", async () => {
+		const files = new Map([["/sessions/bad.json", "not valid json"]]);
+		const adapter = new MockOpenCodeAdapter(new Map(), new Map(), files);
+
+		const result = await parseSessionFile("/sessions/bad.json", dateRange, gitRepos, adapter);
+		expect(result).toEqual([]);
+	});
+
+	test("includes projectID in description", async () => {
+		const session: OpenCodeSession = {
+			id: "session-789",
+			title: "Test session",
+			time: {
+				created: new Date("2026-01-02").getTime(),
+				updated: new Date("2026-01-02").getTime(),
+			},
+			projectID: "my-project",
+			directory: "/other/path",
+		};
+		const files = new Map([["/sessions/test.json", JSON.stringify(session)]]);
+		const adapter = new MockOpenCodeAdapter(new Map(), new Map(), files);
+
+		const result = await parseSessionFile("/sessions/test.json", dateRange, [], adapter);
+		expect(result[0]!.description).toContain("my-project");
+	});
+});
+
+describe("createOpenCodeReader", () => {
+	test("creates reader with custom adapter", async () => {
+		const session: OpenCodeSession = {
+			id: "session-1",
+			title: "Test session",
+			time: {
+				created: new Date("2026-01-02").getTime(),
+				updated: new Date("2026-01-02").getTime(),
+			},
+			projectID: "project-1",
+			directory: "/home/user/project",
+		};
+		const dirs = new Map([["/test", ["session.json"]]]);
+		const fileStats = new Map([["/test/session.json", { isDir: false }]]);
+		const files = new Map([["/test/session.json", JSON.stringify(session)]]);
+		const adapter = new MockOpenCodeAdapter(dirs, fileStats, files);
+
+		const reader = createOpenCodeReader(adapter);
+		expect(reader.name).toBe("opencode");
+
+		const dateRange: DateRange = {
+			start: new Date("2026-01-01"),
+			end: new Date("2026-01-03"),
+		};
+		const config = {
+			defaultSources: [],
+			gitRepos: [],
+			gitIdentityEmails: [],
+			llm: { enabled: false, provider: "openai" as const, model: "gpt-4" },
+			paths: {
+				opencode: "/test",
+				claude: "",
+				codex: "",
+				factory: "",
+				vscode: "",
+				cursor: "",
+				terminal: "",
+				filesystem: "",
+			},
+			calendar: {
+				excludePatterns: [],
+				includePatterns: [],
+			},
+		};
+
+		const result = await reader.read(dateRange, config);
+		expect(result).toHaveLength(1);
+		expect(result[0]!.source).toBe("opencode");
+	});
+
+	test("returns empty array for error during read", async () => {
+		const adapter = new MockOpenCodeAdapter();
+
+		const reader = createOpenCodeReader(adapter);
+		const dateRange: DateRange = {
+			start: new Date("2026-01-01"),
+			end: new Date("2026-01-03"),
+		};
+		const config = {
+			defaultSources: [],
+			gitRepos: [],
+			gitIdentityEmails: [],
+			llm: { enabled: false, provider: "openai" as const, model: "gpt-4" },
+			paths: {
+				opencode: "/nonexistent",
+				claude: "",
+				codex: "",
+				factory: "",
+				vscode: "",
+				cursor: "",
+				terminal: "",
+				filesystem: "",
+			},
+			calendar: {
+				excludePatterns: [],
+				includePatterns: [],
+			},
+		};
+
+		const result = await reader.read(dateRange, config);
+		expect(result).toEqual([]);
 	});
 });
