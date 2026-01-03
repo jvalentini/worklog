@@ -71,6 +71,7 @@ function createMockConfig(repos: string[]): Config {
 			cursor: "~/.config/Cursor",
 			terminal: "~/.bash_history",
 			filesystem: "~/code",
+			slack: "~/Downloads/slack-export",
 		},
 		llm: {
 			enabled: false,

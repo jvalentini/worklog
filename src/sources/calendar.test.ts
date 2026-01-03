@@ -66,6 +66,7 @@ const baseConfig: Config = {
 		cursor: "",
 		terminal: "",
 		filesystem: "",
+		slack: "",
 	},
 	calendar: {
 		excludePatterns: [],

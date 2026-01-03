@@ -8,6 +8,7 @@ import { filesystemReader } from "./filesystem.ts";
 import { gitReader } from "./git.ts";
 import { githubReader } from "./github.ts";
 import { opencodeReader } from "./opencode.ts";
+import { slackReader } from "./slack.ts";
 import { terminalReader } from "./terminal.ts";
 import { vscodeReader } from "./vscode.ts";
 
@@ -23,6 +24,7 @@ const readers: Record<SourceType, SourceReader> = {
 	terminal: terminalReader,
 	filesystem: filesystemReader,
 	calendar: calendarReader,
+	slack: slackReader,
 };
 
 export function getReader(source: SourceType): SourceReader | undefined {
@@ -49,4 +51,5 @@ export const allSourceTypes: readonly SourceType[] = [
 	"terminal",
 	"filesystem",
 	"calendar",
+	"slack",
 ] as const;
