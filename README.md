@@ -8,14 +8,13 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Bun](https://img.shields.io/badge/Bun-1.2-black?logo=bun&logoColor=white)](https://bun.sh/)
 [![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/jvalentini/worklog/blob/main/LICENSE)
+[![GitHub Release](https://img.shields.io/github/v/release/jvalentini/worklog)](https://github.com/jvalentini/worklog/releases)
+[![Code Size](https://img.shields.io/github/languages/code-size/jvalentini/worklog)](https://github.com/jvalentini/worklog)
+[![GitHub Stars](https://img.shields.io/github/stars/jvalentini/worklog?style=flat)](https://github.com/jvalentini/worklog)
 
 [![macOS](https://img.shields.io/badge/macOS-supported-brightgreen?logo=apple)](https://github.com/jvalentini/worklog/releases)
 [![Linux](https://img.shields.io/badge/Linux-supported-brightgreen?logo=linux&logoColor=white)](https://github.com/jvalentini/worklog/releases)
 [![Windows](https://img.shields.io/badge/Windows-supported-brightgreen?logo=windows)](https://github.com/jvalentini/worklog/releases)
-
-[![GitHub Release](https://img.shields.io/github/v/release/jvalentini/worklog)](https://github.com/jvalentini/worklog/releases)
-[![Code Size](https://img.shields.io/github/languages/code-size/jvalentini/worklog)](https://github.com/jvalentini/worklog)
-[![GitHub Stars](https://img.shields.io/github/stars/jvalentini/worklog?style=flat)](https://github.com/jvalentini/worklog)
 
 </div>
 
