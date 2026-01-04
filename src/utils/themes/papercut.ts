@@ -156,6 +156,14 @@ export const papercutTheme: DashboardTheme = {
             color: #E53935;
         }
 
+        [data-theme="papercut"] .secondary-metrics {
+            background: #F5F5F5;
+            border: 3px solid #000000;
+            border-radius: 0;
+            box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.4);
+            animation: brutalistDrop 0.3s ease-out 0.32s backwards;
+        }
+
         [data-theme="papercut"] .main-grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
