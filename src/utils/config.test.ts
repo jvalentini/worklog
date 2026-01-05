@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { mkdir, rm } from "node:fs/promises";
+import { mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expandPath, loadConfig } from "../utils/config.ts";
@@ -97,6 +97,64 @@ describe("loadConfig timezone", () => {
 			process.env.WORKLOG_TIMEZONE = "UTC";
 			const config = await loadConfig();
 			expect(config.timezone).toBe("UTC");
+		});
+	});
+});
+
+describe("loadConfig defaultSources", () => {
+	const originalHome = process.env.HOME;
+
+	afterEach(async () => {
+		process.env.HOME = originalHome;
+		delete process.env.WORKLOG_SOURCES;
+	});
+
+	async function withTempHome(fn: (home: string) => Promise<void>) {
+		const home = join(tmpdir(), `worklog-config-test-${Date.now()}`);
+		await mkdir(home, { recursive: true });
+		process.env.HOME = home;
+		try {
+			await fn(home);
+		} finally {
+			try {
+				await rm(home, { recursive: true });
+			} catch {}
+		}
+	}
+
+	test("allows empty defaultSources array", async () => {
+		await withTempHome(async (home) => {
+			const configDir = join(home, ".config", "worklog");
+			await mkdir(configDir, { recursive: true });
+			await Bun.write(
+				join(configDir, "config.json"),
+				JSON.stringify({
+					defaultSources: [],
+					gitRepos: [],
+				}),
+			);
+
+			const config = await loadConfig();
+			expect(config.defaultSources).toEqual([]);
+			expect(config.gitRepos).toEqual([]);
+		});
+	});
+
+	test("uses schema defaults when defaultSources is empty array", async () => {
+		await withTempHome(async (home) => {
+			const configDir = join(home, ".config", "worklog");
+			await mkdir(configDir, { recursive: true });
+			await Bun.write(
+				join(configDir, "config.json"),
+				JSON.stringify({
+					defaultSources: [],
+					gitRepos: [],
+				}),
+			);
+
+			const config = await loadConfig();
+			// Empty array should be preserved, not replaced with defaults
+			expect(config.defaultSources).toEqual([]);
 		});
 	});
 });
