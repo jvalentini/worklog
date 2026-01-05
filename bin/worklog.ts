@@ -861,7 +861,6 @@ program
 			? (opts.port as number)
 			: (config.dashboard?.port ?? 3000);
 		const host = "127.0.0.1";
-		const config = await loadConfig();
 		const timeZone = config.timezone;
 
 		const { generateDashboardHTML } = await import("../src/utils/dashboard.ts");
