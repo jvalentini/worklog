@@ -386,8 +386,8 @@ configure_worklog() {
 	if [ ${#repos[@]} -gt 0 ]; then sources+=("git"); fi
 
 	if [ ${#sources[@]} -eq 0 ]; then
-		warn "No sources selected; defaulting to git"
-		sources=("git")
+		warn "No sources selected. You can configure sources later by editing ${CONFIG_PATH}"
+		warn "The tool will work but won't generate any work items until sources are configured."
 	fi
 
 	mkdir -p "$CONFIG_DIR"
