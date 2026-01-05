@@ -34,7 +34,7 @@ worklog -y               # Yesterday
 worklog -w               # This week
 worklog -lw              # Last week
 worklog -v               # Verbose output
-worklog -D               # Launch web dashboard
+worklog dashboard           # Launch web dashboard
 worklog -x               # Smart AI-powered clustering
 worklog search "query"   # Search history
 ```
@@ -48,7 +48,7 @@ worklog search "query"   # Search history
 - **Interactive Dashboard** - Web-based analytics at localhost:3000
 - **Flexible Output** - Markdown, JSON, plain text, or Slack format
 - **Search & Recovery** - Full-text search and session context recovery
-- **Scheduled Reports** - Cron integration with Slack support
+- **Scheduled Reports** - systemd timers (cron fallback) with Slack support
 
 ## CLI Reference
 
@@ -76,8 +76,6 @@ worklog search "query"   # Search history
 | `-x, --smart` | Smart context clustering and summarization |
 | `-L, --llm` | Enable LLM summarization (requires API key) |
 | `-t, --trends` | Show activity trends vs previous period |
-| `-D, --dashboard` | Launch interactive web dashboard |
-| `-T, --theme <name>` | Dashboard theme (`default`, `chaos`) |
 
 ### Data Selection
 | Flag | Description |
@@ -119,6 +117,36 @@ worklog schedule run --period weekly
 # Backfill snapshots without posting to Slack
 worklog schedule backfill                  # Default: 4w daily/weekly + 1m monthly
 worklog schedule backfill --since 2025-01-01 --until 2025-01-31
+```
+
+### Snapshot Timing
+
+Scheduled snapshots run on your local machine and always generate the **previous** period using your configured timezone.
+
+Default schedule (local time):
+- **Daily**: 00:05
+- **Weekly**: Monday 00:05
+- **Monthly**: 1st day of month 00:05
+- **Quarterly**: Jan/Apr/Jul/Oct 1st 00:05
+
+Migration guide: `docs/snapshot-migration-guide.md`
+
+**`worklog dashboard`** - Launch interactive dashboard from saved snapshots
+```bash
+worklog dashboard
+worklog dashboard --theme chaos
+```
+
+**`worklog snapshot`** - Verify and repair saved snapshots
+```bash
+# Detect inconsistencies between weekly snapshots and daily snapshots
+worklog snapshot verify
+
+# Dry-run regeneration for a specific week
+worklog snapshot regenerate --week 2025-12-22 --dry-run
+
+# Regenerate all dailies that appear incomplete
+worklog snapshot regenerate --all
 ```
 
 **`worklog completion`** - Generate bash completion script
@@ -169,6 +197,7 @@ Create `~/.config/worklog/config.json`:
 | `OPENAI_API_KEY` | Required for `--llm` with OpenAI |
 | `ANTHROPIC_API_KEY` | Required for `--llm` with Anthropic |
 | `WORKLOG_SLACK_WEBHOOK` | Slack webhook for scheduled reports |
+| `WORKLOG_TIMEZONE` | Override timezone for date boundaries |
 
 ## Output Examples
 
