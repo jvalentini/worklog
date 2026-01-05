@@ -1058,19 +1058,50 @@ program
 		};
 
 		function serveWithFallbackPort(startPort: number): ReturnType<typeof Bun.serve> {
-			for (let port = startPort; port < startPort + 10; port++) {
-				try {
-					return Bun.serve({ hostname: host, port, fetch: fetchHandler });
-				} catch (error) {
-					const message = String(error);
-					if (message.includes("EADDRINUSE") || message.includes("address already in use")) {
-						continue;
-					}
-					throw error;
-				}
-			}
+			try {
+				return Bun.serve({ hostname: host, port: startPort, fetch: fetchHandler });
+			} catch (error) {
+				const errorObj = error as Error & { code?: string; errno?: number };
+				const message = String(error);
+				const isPortInUse =
+					errorObj.code === "EADDRINUSE" ||
+					message.includes("EADDRINUSE") ||
+					message.includes("address already in use") ||
+					(message.includes("port") && message.includes("in use"));
 
-			return Bun.serve({ hostname: host, port: 0, fetch: fetchHandler });
+				if (isPortInUse) {
+					// Try to find an available port
+					for (let port = startPort + 1; port < startPort + 100; port++) {
+						try {
+							const server = Bun.serve({ hostname: host, port, fetch: fetchHandler });
+							console.log(
+								chalk.yellow(`⚠️  Port ${startPort} is in use, using port ${port} instead`),
+							);
+							return server;
+						} catch (err) {
+							const errObj = err as Error & { code?: string };
+							const errMessage = String(err);
+							const isPortInUseErr =
+								errObj.code === "EADDRINUSE" ||
+								errMessage.includes("EADDRINUSE") ||
+								errMessage.includes("address already in use") ||
+								(errMessage.includes("port") && errMessage.includes("in use"));
+							if (isPortInUseErr) {
+								continue;
+							}
+							throw err;
+						}
+					}
+					// Fallback to OS-assigned port if we can't find one in range
+					console.log(
+						chalk.yellow(
+							`⚠️  Ports ${startPort}-${startPort + 99} are in use, using OS-assigned port`,
+						),
+					);
+					return Bun.serve({ hostname: host, port: 0, fetch: fetchHandler });
+				}
+				throw error;
+			}
 		}
 
 		const server = serveWithFallbackPort(preferredPort);
