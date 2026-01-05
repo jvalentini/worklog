@@ -1057,45 +1057,19 @@ program
 			});
 		};
 
-		function serveWithFallbackPort(startPort: number): ReturnType<typeof Bun.serve> {
-			try {
-				return Bun.serve({ hostname: host, port: startPort, fetch: fetchHandler });
-			} catch (error) {
-				const message = String(error);
-				if (message.includes("EADDRINUSE") || message.includes("address already in use")) {
-					// Try to find an available port
-					for (let port = startPort + 1; port < startPort + 100; port++) {
-						try {
-							const server = Bun.serve({ hostname: host, port, fetch: fetchHandler });
-							console.log(
-								chalk.yellow(`⚠️  Port ${startPort} is in use, using port ${port} instead`),
-							);
-							return server;
-						} catch (err) {
-							const errMessage = String(err);
-							if (
-								errMessage.includes("EADDRINUSE") ||
-								errMessage.includes("address already in use")
-							) {
-								continue;
-							}
-							throw err;
-						}
-					}
-					// Fallback to OS-assigned port if we can't find one in range
-					console.log(
-						chalk.yellow(
-							`⚠️  Ports ${startPort}-${startPort + 99} are in use, using OS-assigned port`,
-						),
-					);
-					return Bun.serve({ hostname: host, port: 0, fetch: fetchHandler });
-				}
-				throw error;
-			}
+		const { serveWithFallbackPort } = await import("../src/utils/port-selection.ts");
+		const result = serveWithFallbackPort(preferredPort, {
+			hostname: host,
+			fetch: fetchHandler,
+		});
+
+		if (result.usedFallback) {
+			console.log(
+				chalk.yellow(`⚠️  Port ${preferredPort} is in use, using port ${result.port} instead`),
+			);
 		}
 
-		const server = serveWithFallbackPort(preferredPort);
-		console.log(`🚀 Dashboard: http://${host}:${server.port}`);
+		console.log(`🚀 Dashboard: http://${host}:${result.port}`);
 		console.log(chalk.dim(`  Theme: ${opts.theme} (available: ${availableThemes.join(", ")})`));
 		console.log(chalk.dim("  Press Ctrl+C to stop"));
 	});
