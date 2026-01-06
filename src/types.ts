@@ -85,7 +85,7 @@ export interface CliOptions {
 
 const LlmConfigSchema = z.object({
 	enabled: z.boolean().default(false),
-	provider: z.enum(["openai", "anthropic"]).default("openai"),
+	provider: z.enum(["openai", "anthropic", "gemini"]).default("openai"),
 	model: z.string().default("gpt-4o-mini"),
 });
 

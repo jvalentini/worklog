@@ -51,7 +51,7 @@ const EnhancedConfigSchema = ConfigSchema.superRefine((config, ctx) => {
 	}
 
 	if (config.llm.enabled) {
-		const validProviders = ["openai", "anthropic"];
+		const validProviders = ["openai", "anthropic", "gemini"];
 		if (!validProviders.includes(config.llm.provider)) {
 			ctx.addIssue({
 				code: z.ZodIssueCode.custom,
