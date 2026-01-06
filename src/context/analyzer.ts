@@ -674,11 +674,12 @@ function generateThemeLabel(keywords: string[], items: WorkItem[]): string {
 
 		// Last resort: try to find any nouns or proper names
 		const fullContent = items.map(i => `${i.title} ${i.description ?? ""}`).join(" ");
-		const fallbackTokens = fullContent
+		const matchedWords = fullContent
 			.toLowerCase()
-			.match(/\b[a-z]{4,}\b/g) // Words of 4+ characters
-			?.filter(word => !GENERIC_KEYWORDS.has(word))
-			?.slice(0, 2) || [];
+			.match(/\b[a-z]{4,}\b/g); // Words of 4+ characters
+		const fallbackTokens: string[] = matchedWords
+			?.filter((word): word is string => !GENERIC_KEYWORDS.has(word))
+			?.slice(0, 2) ?? [];
 
 		if (fallbackTokens.length >= 2) {
 			return `${capitalize(fallbackTokens[0])} & ${capitalize(fallbackTokens[1])}`;
