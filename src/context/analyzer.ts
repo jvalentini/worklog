@@ -371,6 +371,87 @@ const GENERIC_KEYWORDS = new Set([
 	"enabled",
 	"disable",
 	"disabled",
+
+	// PR/commit specific terms
+	"pr",
+	"pull",
+	"request",
+	"requests",
+	"merge",
+	"merges",
+	"merged",
+	"commit",
+	"commits",
+	"branch",
+	"branches",
+
+	// More generic action words
+	"trigger",
+	"triggers",
+	"triggered",
+	"handle",
+	"handles",
+	"handled",
+	"support",
+	"supports",
+	"supported",
+	"resolve",
+	"resolves",
+	"resolved",
+	"address",
+	"addresses",
+	"addressed",
+
+	// Tool/framework names that are too generic
+	"release",
+	"please",
+	"npm",
+	"bun",
+	"node",
+	"typescript",
+	"ts",
+	"js",
+	"javascript",
+	"react",
+	"vue",
+	"angular",
+	"next",
+	"nuxt",
+	"express",
+	"fastify",
+	"docker",
+	"kubernetes",
+	"aws",
+	"gcp",
+	"azure",
+	"postgres",
+	"postgresql",
+	"mysql",
+	"mongodb",
+	"redis",
+	"elasticsearch",
+
+	// Even more generic terms
+	"new",
+	"old",
+	"good",
+	"bad",
+	"better",
+	"best",
+	"simple",
+	"complex",
+	"easy",
+	"hard",
+	"quick",
+	"fast",
+	"slow",
+	"small",
+	"large",
+	"big",
+	"little",
+	"major",
+	"minor",
+	"patch",
 ]);
 
 function tokenize(text: string): string[] {
@@ -565,33 +646,58 @@ function generateThemeLabel(keywords: string[], items: WorkItem[]): string {
 
 	if (meaningfulKeywords.length === 0) {
 		// If no meaningful keywords, try to generate a theme from item content
-		const titles = items.map(i => i.title).join(" ");
-		const titleTokens = tokenize(titles).filter(t => !GENERIC_KEYWORDS.has(t.toLowerCase()));
+		const allText = items.map(i => `${i.title} ${i.description ?? ""}`).join(" ");
+		const titleTokens = tokenize(allText).filter(t => !GENERIC_KEYWORDS.has(t.toLowerCase()));
 
 		if (titleTokens.length > 0) {
-			// Use the most common meaningful word from titles
+			// Use the most common meaningful words from all content
 			const tokenCounts = new Map<string, number>();
 			for (const token of titleTokens) {
 				tokenCounts.set(token, (tokenCounts.get(token) ?? 0) + 1);
 			}
-			const sortedTokens = [...tokenCounts.entries()].sort((a, b) => b[1] - a[1]);
-			const primary = sortedTokens[0]?.[0];
-			const secondary = sortedTokens[1]?.[0];
+			const sortedTokens = [...tokenCounts.entries()]
+				.sort((a, b) => b[1] - a[1])
+				.slice(0, 3); // Get top 3 most meaningful terms
 
-			if (primary && secondary) {
-				return `${capitalize(primary)} & ${capitalize(secondary)}`;
-			} else if (primary) {
-				return capitalize(primary);
+			// Try to find the most specific/unique terms
+			const meaningfulTokens = sortedTokens
+				.map(([token]) => token)
+				.filter(token => token.length > 3) // Prefer longer, more specific words
+				.slice(0, 2); // Take at most 2
+
+			if (meaningfulTokens.length >= 2) {
+				return `${capitalize(meaningfulTokens[0])} & ${capitalize(meaningfulTokens[1])}`;
+			} else if (meaningfulTokens.length === 1) {
+				return capitalize(meaningfulTokens[0]);
 			}
 		}
 
-		// Fallback to source-based naming
+		// Last resort: try to find any nouns or proper names
+		const allText = items.map(i => `${i.title} ${i.description ?? ""}`).join(" ");
+		const fallbackTokens = allText
+			.toLowerCase()
+			.match(/\b[a-z]{4,}\b/g) // Words of 4+ characters
+			?.filter(word => !GENERIC_KEYWORDS.has(word))
+			?.slice(0, 2) || [];
+
+		if (fallbackTokens.length >= 2) {
+			return `${capitalize(fallbackTokens[0])} & ${capitalize(fallbackTokens[1])}`;
+		} else if (fallbackTokens.length === 1) {
+			return capitalize(fallbackTokens[0]);
+		}
+
+		// Ultimate fallback to source-based naming
 		const sources = [...new Set(items.map((i) => i.source))];
 		return sources.length === 1 ? `${sources[0]} activity` : "Mixed activity";
 	}
 
-	const primary = meaningfulKeywords[0];
-	const secondary = meaningfulKeywords[1];
+	// For meaningful keywords, prefer longer, more specific ones
+	const sortedKeywords = meaningfulKeywords
+		.sort((a, b) => b.length - a.length) // Longer words first
+		.slice(0, 2);
+
+	const primary = sortedKeywords[0];
+	const secondary = sortedKeywords[1];
 
 	if (!primary) {
 		const sources = [...new Set(items.map((i) => i.source))];
