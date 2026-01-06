@@ -81,8 +81,8 @@ describe("formatProjectsMarkdown", () => {
 
 		const result = formatProjectsMarkdown(summary, false);
 
-		expect(result).toContain("**worklog**:");
-		expect(result).toContain("**Misc**:");
+		expect(result).toContain("## worklog");
+		expect(result).toContain("## Misc");
 	});
 
 	test("excludes Misc section when no misc items exist", () => {
@@ -97,8 +97,8 @@ describe("formatProjectsMarkdown", () => {
 
 		const result = formatProjectsMarkdown(summary, false);
 
-		expect(result).toContain("**worklog**:");
-		expect(result).not.toContain("**Misc**:");
+		expect(result).toContain("## worklog");
+		expect(result).not.toContain("## Misc");
 	});
 
 	test("renders Misc in verbose mode", () => {
@@ -286,8 +286,8 @@ describe("Misc bucket behavior", () => {
 		const plain = formatProjectsPlain(summary);
 		const slack = formatProjectsSlack(summary);
 
-		expect(markdown).toContain("**alpha**:");
-		expect(markdown).toContain("**Misc**:");
+		expect(markdown).toContain("## alpha");
+		expect(markdown).toContain("## Misc");
 
 		expect(plain).toContain("ALPHA");
 		expect(plain).toContain("MISC");
@@ -725,7 +725,7 @@ describe("end-to-end GitHub PR workflow", () => {
 		});
 
 		const conciseOutput = formatProjectsMarkdown(dailySummaryWithPrAndCommits, false);
-		expect(conciseOutput).toContain("**api-server**:");
+		expect(conciseOutput).toContain("## api-server");
 		expect(conciseOutput).toContain(
 			"Opened PR #10: Implement OAuth flow (https://github.com/user/api-server/pull/10)",
 		);
