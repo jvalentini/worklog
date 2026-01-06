@@ -667,8 +667,8 @@ function generateThemeLabel(keywords: string[], items: WorkItem[]): string {
 
 	if (meaningfulKeywords.length === 0) {
 		// If no meaningful keywords, try to generate a theme from item content
-		const allText = items.map(i => `${i.title} ${i.description ?? ""}`).join(" ");
-		const titleTokens = tokenize(allText).filter(t => !GENERIC_KEYWORDS.has(t.toLowerCase()));
+		const allText = items.map((i) => `${i.title} ${i.description ?? ""}`).join(" ");
+		const titleTokens = tokenize(allText).filter((t) => !GENERIC_KEYWORDS.has(t.toLowerCase()));
 
 		if (titleTokens.length > 0) {
 			// Use the most common meaningful words from all content
@@ -676,14 +676,12 @@ function generateThemeLabel(keywords: string[], items: WorkItem[]): string {
 			for (const token of titleTokens) {
 				tokenCounts.set(token, (tokenCounts.get(token) ?? 0) + 1);
 			}
-			const sortedTokens = [...tokenCounts.entries()]
-				.sort((a, b) => b[1] - a[1])
-				.slice(0, 3); // Get top 3 most meaningful terms
+			const sortedTokens = [...tokenCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3); // Get top 3 most meaningful terms
 
 			// Try to find the most specific/unique terms
 			const meaningfulTokens = sortedTokens
 				.map(([token]) => token)
-				.filter(token => token.length > 3) // Prefer longer, more specific words
+				.filter((token) => token.length > 3) // Prefer longer, more specific words
 				.slice(0, 2); // Take at most 2
 
 			if (meaningfulTokens.length >= 2) {
@@ -701,13 +699,11 @@ function generateThemeLabel(keywords: string[], items: WorkItem[]): string {
 		}
 
 		// Last resort: try to find any nouns or proper names
-		const fullContent = items.map(i => `${i.title} ${i.description ?? ""}`).join(" ");
-		const matchedWords = fullContent
-			.toLowerCase()
-			.match(/\b[a-z]{4,}\b/g); // Words of 4+ characters
-		const fallbackTokens: string[] = matchedWords
-			?.filter((word): word is string => !GENERIC_KEYWORDS.has(word))
-			?.slice(0, 2) ?? [];
+		const fullContent = items.map((i) => `${i.title} ${i.description ?? ""}`).join(" ");
+		const matchedWords = fullContent.toLowerCase().match(/\b[a-z]{4,}\b/g); // Words of 4+ characters
+		const fallbackTokens: string[] =
+			matchedWords?.filter((word): word is string => !GENERIC_KEYWORDS.has(word))?.slice(0, 2) ??
+			[];
 
 		if (fallbackTokens.length >= 2) {
 			const first = fallbackTokens[0];
