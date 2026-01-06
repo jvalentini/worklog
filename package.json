@@ -1,6 +1,6 @@
 {
 	"name": "@jvalentini/worklog",
-	"version": "2.0.0",
+	"version": "4.0.0",
 	"description": "Generate daily stand-up summaries from AI coding sessions, git commits, and GitHub activity",
 	"type": "module",
 	"repository": {
