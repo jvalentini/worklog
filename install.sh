@@ -383,7 +383,7 @@ configure_worklog() {
 	if [ "$use_codex" = "y" ]; then sources+=("codex"); fi
 	if [ "$use_factory" = "y" ]; then sources+=("factory"); fi
 	if [ -n "$github_user" ]; then sources+=("github"); fi
-	if [ ${#repos[@]} -gt 0 ]; then sources+=("git"); fi
+	if [ "${#repos[@]}" -gt 0 ]; then sources+=("git"); fi
 
 	if [ ${#sources[@]} -eq 0 ]; then
 		warn "No sources selected. You can configure sources later by editing ${CONFIG_PATH}"
@@ -394,7 +394,7 @@ configure_worklog() {
 
 	local sources_json repos_json
 	sources_json="$(json_array "${sources[@]}")"
-	repos_json="$(json_array "${repos[@]}")"
+	repos_json="$(json_array ${repos[@]+"${repos[@]}"})"
 
 	if [ -n "$github_user" ]; then
 		cat >"$CONFIG_PATH" <<EOF
