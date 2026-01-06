@@ -551,7 +551,28 @@ export function computeSimilarityMatrix(items: WorkItem[]): number[][] {
 			} else {
 				const vecJ = vectors[j];
 				if (vecJ) {
-					row[j] = cosineSimilarity(vecI, vecJ);
+					let similarity = cosineSimilarity(vecI, vecJ);
+
+					// Boost similarity for clearly related items
+					const itemI = items[i];
+					const itemJ = items[j];
+					if (itemI && itemJ) {
+						// GitHub PR events with same PR number should be highly similar
+						const prMatchI = itemI.title.match(/PR #(\d+)/);
+						const prMatchJ = itemJ.title.match(/PR #(\d+)/);
+						if (prMatchI && prMatchJ && prMatchI[1] === prMatchJ[1]) {
+							similarity = Math.max(similarity, 0.9);
+						}
+
+						// Same commit hash should be highly similar
+						const commitMatchI = itemI.title.match(/([a-f0-9]{7,40})/);
+						const commitMatchJ = itemJ.title.match(/([a-f0-9]{7,40})/);
+						if (commitMatchI && commitMatchJ && commitMatchI[1] === commitMatchJ[1]) {
+							similarity = Math.max(similarity, 0.95);
+						}
+					}
+
+					row[j] = similarity;
 				}
 			}
 		}
