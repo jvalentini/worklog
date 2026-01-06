@@ -687,9 +687,16 @@ function generateThemeLabel(keywords: string[], items: WorkItem[]): string {
 				.slice(0, 2); // Take at most 2
 
 			if (meaningfulTokens.length >= 2) {
-				return `${capitalize(meaningfulTokens[0])} & ${capitalize(meaningfulTokens[1])}`;
+				const first = meaningfulTokens[0];
+				const second = meaningfulTokens[1];
+				if (first && second) {
+					return `${capitalize(first)} & ${capitalize(second)}`;
+				}
 			} else if (meaningfulTokens.length === 1) {
-				return capitalize(meaningfulTokens[0]);
+				const first = meaningfulTokens[0];
+				if (first) {
+					return capitalize(first);
+				}
 			}
 		}
 
