@@ -69,12 +69,19 @@ function formatDailyProject(
 
 	if (!verbose) {
 		const lines: string[] = [];
-		lines.push(`**${project.projectName}**:`);
+		lines.push(`## ${project.projectName}`);
+
+		if (split.prsMerged.length > 0) {
+			lines.push("- **Merged PRs**:");
+			for (const pr of split.prsMerged) {
+				lines.push(`  - ${formatPrLine(pr)}`);
+			}
+			if (daily.mergedPrSummary) {
+				lines.push(`  - *${daily.mergedPrSummary}*`);
+			}
+		}
 
 		for (const pr of split.prsOpened) {
-			lines.push(`- ${formatPrLine(pr)}`);
-		}
-		for (const pr of split.prsMerged) {
 			lines.push(`- ${formatPrLine(pr)}`);
 		}
 		for (const branch of split.branchMerges) {
@@ -104,13 +111,28 @@ function formatDailyProject(
 	lines.push(`**Summary**: ${summary}`);
 	lines.push("");
 
-	if (split.prsOpened.length + split.prsMerged.length + split.branchMerges.length > 0) {
-		for (const pr of split.prsOpened) {
-			lines.push(`- ${formatPrLine(pr)}`);
-		}
+	if (split.prsMerged.length > 0) {
+		lines.push(`**Merged PRs** (${split.prsMerged.length}):`);
 		for (const pr of split.prsMerged) {
 			lines.push(`- ${formatPrLine(pr)}`);
 		}
+		if (daily.mergedPrSummary) {
+			lines.push("");
+			lines.push(`*${daily.mergedPrSummary}*`);
+		}
+		lines.push("");
+	}
+
+	if (split.prsOpened.length > 0) {
+		lines.push(`**Opened PRs** (${split.prsOpened.length}):`);
+		for (const pr of split.prsOpened) {
+			lines.push(`- ${formatPrLine(pr)}`);
+		}
+		lines.push("");
+	}
+
+	if (split.branchMerges.length > 0) {
+		lines.push(`**Branch Merges** (${split.branchMerges.length}):`);
 		for (const branch of split.branchMerges) {
 			lines.push(`- ${formatBranchMergeLine(branch, "→")}`);
 		}
@@ -943,6 +965,7 @@ export function formatProjectsMarkdown(summary: ProjectWorkSummary, verbose = fa
 		for (const project of summary.projects) {
 			for (const daily of project.dailyActivity) {
 				lines.push(formatDailyProject(project, daily, verbose));
+				lines.push("");
 			}
 		}
 	} else if (periodType === "weekly") {

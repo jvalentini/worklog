@@ -31,6 +31,7 @@ export interface DailyProjectActivity {
 	githubActivity: WorkItem[];
 	otherActivity: WorkItem[];
 	summary?: string;
+	mergedPrSummary?: string;
 }
 
 export interface ProjectActivity {
