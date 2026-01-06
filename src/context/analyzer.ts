@@ -642,7 +642,7 @@ function computeClusterCoherence(items: WorkItem[]): number {
 
 function generateThemeLabel(keywords: string[], items: WorkItem[]): string {
 	// Filter out generic keywords that don't provide meaningful themes
-	const meaningfulKeywords = keywords.filter(k => !GENERIC_KEYWORDS.has(k.toLowerCase()));
+	const meaningfulKeywords = keywords.filter((k) => !GENERIC_KEYWORDS.has(k.toLowerCase()));
 
 	if (meaningfulKeywords.length === 0) {
 		// If no meaningful keywords, try to generate a theme from item content
@@ -682,9 +682,16 @@ function generateThemeLabel(keywords: string[], items: WorkItem[]): string {
 			?.slice(0, 2) ?? [];
 
 		if (fallbackTokens.length >= 2) {
-			return `${capitalize(fallbackTokens[0])} & ${capitalize(fallbackTokens[1])}`;
+			const first = fallbackTokens[0];
+			const second = fallbackTokens[1];
+			if (first && second) {
+				return `${capitalize(first)} & ${capitalize(second)}`;
+			}
 		} else if (fallbackTokens.length === 1) {
-			return capitalize(fallbackTokens[0]);
+			const first = fallbackTokens[0];
+			if (first) {
+				return capitalize(first);
+			}
 		}
 
 		// Ultimate fallback to source-based naming
