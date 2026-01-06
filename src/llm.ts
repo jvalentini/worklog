@@ -74,7 +74,7 @@ function buildPrompt(project: string, date: Date, activity: DailyProjectActivity
 	return parts.join("\n");
 }
 
-async function callOpenAI(prompt: string, model: string): Promise<string> {
+async function callOpenAI(prompt: string, model: string, maxTokens = 150): Promise<string> {
 	const apiKey = process.env.OPENAI_API_KEY;
 	if (!apiKey) {
 		throw new Error("OPENAI_API_KEY environment variable is required for LLM summarization");
@@ -101,7 +101,7 @@ async function callOpenAI(prompt: string, model: string): Promise<string> {
 		body: JSON.stringify({
 			model,
 			messages,
-			max_tokens: 150,
+			max_tokens: maxTokens,
 			temperature: 0.3,
 		}),
 	});
@@ -121,7 +121,7 @@ async function callOpenAI(prompt: string, model: string): Promise<string> {
 	return content;
 }
 
-async function callAnthropic(prompt: string, model: string): Promise<string> {
+async function callAnthropic(prompt: string, model: string, maxTokens = 150): Promise<string> {
 	const apiKey = process.env.ANTHROPIC_API_KEY;
 	if (!apiKey) {
 		throw new Error("ANTHROPIC_API_KEY environment variable is required for LLM summarization");
@@ -136,7 +136,7 @@ async function callAnthropic(prompt: string, model: string): Promise<string> {
 		},
 		body: JSON.stringify({
 			model,
-			max_tokens: 150,
+			max_tokens: maxTokens,
 			system:
 				"You are a concise technical writer who summarizes development work into single sentences.",
 			messages: [
@@ -174,7 +174,7 @@ interface GeminiResponse {
 	}>;
 }
 
-async function callGemini(prompt: string, model: string): Promise<string> {
+async function callGemini(prompt: string, model: string, maxTokens = 150): Promise<string> {
 	const apiKey = process.env.GEMINI_API_KEY;
 	if (!apiKey) {
 		throw new Error("GEMINI_API_KEY environment variable is required for LLM summarization");
@@ -198,7 +198,7 @@ async function callGemini(prompt: string, model: string): Promise<string> {
 					},
 				],
 				generationConfig: {
-					maxOutputTokens: 150,
+					maxOutputTokens: maxTokens,
 					temperature: 0.3,
 				},
 			}),
@@ -220,22 +220,84 @@ async function callGemini(prompt: string, model: string): Promise<string> {
 	return content;
 }
 
-async function generateSummary(prompt: string, config: Config): Promise<string> {
+async function generateSummary(prompt: string, config: Config, maxTokens = 150): Promise<string> {
 	const { provider, model } = config.llm;
 
 	if (provider === "openai") {
-		return callOpenAI(prompt, model);
+		return callOpenAI(prompt, model, maxTokens);
 	}
 
 	if (provider === "anthropic") {
-		return callAnthropic(prompt, model);
+		return callAnthropic(prompt, model, maxTokens);
 	}
 
 	if (provider === "gemini") {
-		return callGemini(prompt, model);
+		return callGemini(prompt, model, maxTokens);
 	}
 
 	throw new Error(`Unknown LLM provider: ${provider}`);
+}
+
+interface MergedPrInfo {
+	number: number;
+	title: string;
+	summary?: string;
+}
+
+function extractMergedPrs(activity: DailyProjectActivity): MergedPrInfo[] {
+	const mergedPrs: MergedPrInfo[] = [];
+
+	for (const item of activity.githubActivity) {
+		const metadata = item.metadata;
+		if (!metadata || typeof metadata !== "object") continue;
+		if (metadata.type !== "pr" || metadata.action !== "merged") continue;
+
+		const number = metadata.number;
+		if (typeof number !== "number") continue;
+
+		const summaryValue = metadata.summary;
+		const titleValue = metadata.title;
+		const title = item.title;
+
+		mergedPrs.push({
+			number,
+			title:
+				typeof summaryValue === "string" && summaryValue.trim()
+					? summaryValue.trim()
+					: typeof titleValue === "string" && titleValue.trim()
+						? titleValue.trim()
+						: title,
+			summary: typeof summaryValue === "string" ? summaryValue.trim() : undefined,
+		});
+	}
+
+	return mergedPrs;
+}
+
+function buildMergedPrPrompt(project: string, mergedPrs: MergedPrInfo[]): string {
+	const parts: string[] = [];
+
+	parts.push(
+		`Summarize what was accomplished in the following merged pull requests for "${project}" in 2-3 sentences.`,
+	);
+	parts.push("");
+	parts.push("Merged PRs:");
+
+	for (const pr of mergedPrs.slice(0, 10)) {
+		const desc = pr.summary ? `: ${pr.summary}` : "";
+		parts.push(`- PR #${pr.number}: ${pr.title}${desc}`);
+	}
+
+	if (mergedPrs.length > 10) {
+		parts.push(`  ... and ${mergedPrs.length - 10} more PRs`);
+	}
+
+	parts.push("");
+	parts.push(
+		"Focus on the key improvements and features delivered. Respond with ONLY the summary sentences. No formatting or preamble.",
+	);
+
+	return parts.join("\n");
 }
 
 function generateFallbackSummary(activity: DailyProjectActivity): string {
@@ -287,6 +349,12 @@ export async function summarizeProjectActivity(
 		promise: Promise<string>;
 	}> = [];
 
+	const mergedPrPromises: Array<{
+		project: ProjectActivity;
+		daily: DailyProjectActivity;
+		promise: Promise<string | null>;
+	}> = [];
+
 	for (const project of projectSummary.projects) {
 		for (const daily of project.dailyActivity) {
 			const prompt = buildPrompt(project.projectName, daily.date, daily);
@@ -298,16 +366,42 @@ export async function summarizeProjectActivity(
 					return generateFallbackSummary(daily);
 				}),
 			});
+
+			const mergedPrs = extractMergedPrs(daily);
+			if (mergedPrs.length > 0) {
+				const prPrompt = buildMergedPrPrompt(project.projectName, mergedPrs);
+				mergedPrPromises.push({
+					project,
+					daily,
+					promise: generateSummary(prPrompt, config, 500).catch((error) => {
+						console.error(
+							`Failed to generate merged PR summary for ${project.projectName}: ${error}`,
+						);
+						return null;
+					}),
+				});
+			}
 		}
 	}
 
-	const results = await Promise.all(summaryPromises.map((p) => p.promise));
+	const [summaryResults, prResults] = await Promise.all([
+		Promise.all(summaryPromises.map((p) => p.promise)),
+		Promise.all(mergedPrPromises.map((p) => p.promise)),
+	]);
 
 	for (let i = 0; i < summaryPromises.length; i++) {
 		const item = summaryPromises[i];
-		const result = results[i];
+		const result = summaryResults[i];
 		if (item && result) {
 			item.daily.summary = result;
+		}
+	}
+
+	for (let i = 0; i < mergedPrPromises.length; i++) {
+		const item = mergedPrPromises[i];
+		const result = prResults[i];
+		if (item && result) {
+			item.daily.mergedPrSummary = result;
 		}
 	}
 
