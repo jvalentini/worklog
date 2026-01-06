@@ -1,9 +1,31 @@
 {
-	"name": "worklog",
+	"name": "@jvalentini/worklog",
 	"version": "2.0.0",
 	"description": "Generate daily stand-up summaries from AI coding sessions, git commits, and GitHub activity",
 	"type": "module",
-	"private": true,
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/jvalentini/worklog.git"
+	},
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com/"
+	},
+	"keywords": [
+		"cli",
+		"productivity",
+		"git",
+		"github",
+		"ai",
+		"coding",
+		"standup",
+		"worklog"
+	],
+	"author": "Justin Valentini",
+	"license": "MIT",
+	"main": "./bin/worklog.ts",
+	"exports": {
+		".": "./bin/worklog.ts"
+	},
 	"bin": {
 		"worklog": "./bin/worklog.ts"
 	},

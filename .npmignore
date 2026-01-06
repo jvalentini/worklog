@@ -1,0 +1,37 @@
+# Development files
+.beads/
+.github/
+*.test.ts
+*.test.js
+src/
+tsconfig.json
+biome.json
+oxlint.json
+lefthook.yml
+mise.toml
+Makefile
+Dockerfile.test
+install.sh
+
+# Documentation (keep README and LICENSE)
+CHANGELOG.md
+CLAUDE.md
+RELEASE_PLEASE_SETUP.md
+SMOKE_TESTS.md
+THEME_REDESIGN_SUMMARY.md
+examples/
+.github/
+
+# Git
+.git/
+.gitattributes
+.gitignore
+
+# Build artifacts
+dist/
+node_modules/
+bun.lock
+
+# Config files
+.release-please-manifest.json
+release-please-config.json
