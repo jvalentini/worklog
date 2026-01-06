@@ -315,3 +315,4 @@ make install   # Install to ~/.local/bin
 ## License
 
 MIT
+# Force Release Please to run
