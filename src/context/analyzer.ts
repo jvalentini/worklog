@@ -673,8 +673,8 @@ function generateThemeLabel(keywords: string[], items: WorkItem[]): string {
 		}
 
 		// Last resort: try to find any nouns or proper names
-		const allText = items.map(i => `${i.title} ${i.description ?? ""}`).join(" ");
-		const fallbackTokens = allText
+		const fullContent = items.map(i => `${i.title} ${i.description ?? ""}`).join(" ");
+		const fallbackTokens = fullContent
 			.toLowerCase()
 			.match(/\b[a-z]{4,}\b/g) // Words of 4+ characters
 			?.filter(word => !GENERIC_KEYWORDS.has(word))
