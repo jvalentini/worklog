@@ -278,11 +278,21 @@ Start with [Example 1: Basic Daily Standup](examples/01-basic-usage.md) to learn
 curl -fsSL https://raw.githubusercontent.com/jvalentini/worklog/main/install.sh | bash
 ```
 
-Options:
-- `--no-config` - Skip setup wizard
-- `--version v1.0.0` - Install specific version
+ Options:
+ - `--no-config` - Skip setup wizard
+ - `--version v1.0.0` - Install specific version
 
-### From Source
+ ### Install via npm
+ ```bash
+ npm install -g @jvalentini/worklog
+ ```
+
+ ### Install via Bun
+ ```bash
+ bun add -g @jvalentini/worklog
+ ```
+
+ ### From Source
 ```bash
 git clone http://github.com/jvalentini/worklog.git
 cd worklog
